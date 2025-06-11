@@ -1,0 +1,109 @@
+🔧 Phác thảo giao diện người dùng – Ứng dụng Video Editor Pro (Tối ưu hóa)
+1. Cấu trúc tổng thể
+Cửa sổ chính gồm:
+
+Thanh menu trên cùng: Tùy chọn Tệp, Chỉnh sửa, Trợ giúp.
+
+Tab chức năng chính: Cắt video, Ghép video, Xóa âm thanh.
+
+Khu vực hiển thị nội dung tab.
+
+Thanh trạng thái dưới cùng: Hiển thị tiến trình và lỗi.
+
+2. Tab Widget (Chức năng chính)
+Sử dụng 3 tab chính:
+
+🪓 Cắt Video (Video Trimmer)
+
+📎 Ghép Video (Video Merger)
+
+🔇 Xóa Âm thanh (Audio Remover)
+
+✅ Các tab dùng biểu tượng để dễ nhận diện.
+
+3. Nội dung chi tiết từng tab
+🪓 Tab 1: Cắt Video
+(1) Khu vực tải & xem trước
+Nút 📂 Chọn Video
+
+Hiển thị tên tệp đã chọn.
+
+Trình phát video + thanh timeline có handles để chọn vùng cắt.
+
+Hiển thị thời gian bắt đầu & kết thúc đoạn đã chọn.
+
+(2) Chế độ cắt
+Cắt theo số đoạn:
+
+Nhập số lượng đoạn → Nút Cắt theo số lượng.
+
+Cắt theo thời lượng:
+
+Nhập thời lượng mỗi đoạn (giây) → Nút Cắt theo thời lượng.
+
+Cắt thủ công:
+
+Dùng handles chọn vùng → Nút ✂ Cắt đoạn đã chọn.
+
+(3) Khu vực lưu trữ & xuất video
+Nút 📁 Chọn thư mục lưu.
+
+Hiển thị đường dẫn thư mục đầu ra.
+
+Nút 🚀 Bắt đầu Cắt.
+
+📎 Tab 2: Ghép Video
+(1) Danh sách & sắp xếp video
+Nút 📂 Thêm Video(s).
+
+Danh sách video đã chọn (hiển thị tên, độ dài, kích thước).
+
+Kéo-thả để sắp xếp lại thứ tự.
+
+Nút 🗑 Xóa đã chọn.
+
+(2) Tùy chọn ghép
+Checkbox 🔀 Ghép ngẫu nhiên.
+
+(Tự động dùng chế độ "Ghép nối tiếp" nếu không chọn ngẫu nhiên).
+
+(3) Khu vực lưu trữ & xuất video
+Nút 📁 Chọn thư mục lưu.
+
+Hiển thị đường dẫn thư mục đầu ra.
+
+Nút 🚀 Bắt đầu Ghép.
+
+🔇 Tab 3: Xóa Âm thanh
+(1) Tải & xem trước video
+Nút 📂 Chọn Video.
+
+Hiển thị tên tệp đã chọn.
+
+Trình phát video đơn giản.
+
+(2) Điều khiển
+Nút 🔇 Xóa Âm thanh.
+
+(3) Lưu & xuất
+Nút 📁 Chọn thư mục lưu.
+
+Hiển thị đường dẫn thư mục đầu ra.
+
+Nút 🚀 Bắt đầu Xử lý.
+
+4. Thanh trạng thái (Status Bar)
+Hiển thị thông tin tiến trình: "Đang xử lý...", "Hoàn tất!"
+
+Hiển thị thông báo lỗi hoặc thành công.
+
+(Có thể thêm biểu tượng loading hoặc checkmark ✅)
+
+5. Thành phần dùng chung
+Thành phần	Mục đích
+Label	Tiêu đề, hướng dẫn
+Button	Các hành động chính
+Input Field	Nhập số lượng, thời lượng, đường dẫn
+List Widget	Danh sách video cần xử lý
+Progress Bar	Tiến độ quá trình xử lý
+Tooltip / Hint	Gợi ý khi rê chuột lên nút
