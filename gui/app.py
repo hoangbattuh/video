@@ -3,6 +3,7 @@ from tkinter import ttk, filedialog, messagebox
 import threading
 import os
 from video_processing.video_cutter import cut_by_segments, cut_by_duration, cut_selected_segment
+from video_processing.video_merger import merge_videos
 from gui.constants import (
     START_TIME_LABEL,
     SELECT_OUTPUT_DIR_BUTTON_TEXT,
@@ -156,11 +157,11 @@ class VideoEditorPro(tk.Tk):
 
         merge_output_dir_frame = ttk.Frame(merge_output_frame)
         merge_output_dir_frame.pack(fill="x", padx=5, pady=5)
-        ttk.Button(merge_output_dir_frame, text=SELECT_OUTPUT_DIR_BUTTON_TEXT).pack(side="left")
+        ttk.Button(merge_output_dir_frame, text=SELECT_OUTPUT_DIR_BUTTON_TEXT, command=self.select_merge_output_directory).pack(side="left")
         self.merge_output_dir_label = ttk.Label(merge_output_dir_frame, text=OUTPUT_DIR_NOT_SELECTED_LABEL)
         self.merge_output_dir_label.pack(side="left", padx=5)
 
-        ttk.Button(merge_output_frame, text="🚀 Bắt đầu Ghép").pack(pady=5)
+        ttk.Button(merge_output_frame, text="🚀 Bắt đầu Ghép", command=self.start_merge_videos).pack(pady=5)
 
         # Tab Xóa Âm thanh
         self.audio_tab = ttk.Frame(self.notebook)
@@ -188,11 +189,11 @@ class VideoEditorPro(tk.Tk):
 
         audio_output_dir_frame = ttk.Frame(audio_output_frame)
         audio_output_dir_frame.pack(fill="x", padx=5, pady=5)
-        ttk.Button(audio_output_dir_frame, text=SELECT_OUTPUT_DIR_BUTTON_TEXT).pack(side="left")
+        ttk.Button(audio_output_dir_frame, text=SELECT_OUTPUT_DIR_BUTTON_TEXT, command=self.select_audio_output_directory).pack(side="left")
         self.audio_output_dir_label = ttk.Label(audio_output_dir_frame, text=OUTPUT_DIR_NOT_SELECTED_LABEL)
         self.audio_output_dir_label.pack(side="left", padx=5)
 
-        ttk.Button(audio_output_frame, text="🚀 Bắt đầu Xóa Âm thanh").pack(pady=5)
+        ttk.Button(audio_output_frame, text="🚀 Bắt đầu Xóa Âm thanh", command=self.start_remove_audio).pack(pady=5)
 
         # Thanh trạng thái dưới cùng
         self.status_bar = tk.Label(self, text="Sẵn sàng", bd=1, relief=tk.SUNKEN, anchor=tk.W)
@@ -283,6 +284,64 @@ class VideoEditorPro(tk.Tk):
             threading.Thread(target=cut_selected_segment, args=(input_path, output_dir, self.stop_flag, self.update_progress, self.set_status, messagebox)).start()
         except Exception as e:
             messagebox.showerror("Lỗi", str(e))
+
+    def select_merge_output_directory(self):
+        dir_path = filedialog.askdirectory()
+        if dir_path:
+            self.merge_output_dir_label.config(text=dir_path)
+            self.set_status(f"Đã chọn thư mục lưu (Ghép): {dir_path}")
+
+    def start_merge_videos(self):
+        input_paths = list(self.merge_video_listbox.get(0, tk.END))
+        output_dir = self.merge_output_dir_label.cget("text")
+        if not input_paths or not output_dir or output_dir == OUTPUT_DIR_NOT_SELECTED_LABEL:
+            messagebox.showwarning(MISSING_INFO_WARNING_TITLE, "Vui lòng chọn video và thư mục lưu (Ghép Video).")
+            return
+        output_path = os.path.join(output_dir, "merged_video.mp4")
+        threading.Thread(target=merge_videos, args=(input_paths, output_path, self.stop_flag, self.update_progress, self.set_status, messagebox)).start()
+
+    def select_audio_output_directory(self):
+        dir_path = filedialog.askdirectory()
+        if dir_path:
+            self.audio_output_dir_label.config(text=dir_path)
+            self.set_status(f"Đã chọn thư mục lưu (Xóa Âm thanh): {dir_path}")
+
+    def start_remove_audio(self):
+        # TODO: Thêm logic xử lý xóa âm thanh khi có module xử lý
+        messagebox.showinfo(NOTIFICATION_TITLE, "Chức năng xóa âm thanh sẽ được cập nhật.")
+
+    def add_video_to_merge_list(self):
+        file_paths = filedialog.askopenfilenames(
+            filetypes=[("Video files", "*.mp4 *.avi *.mov *.mkv")]
+        )
+        for path in file_paths:
+            if path and path not in self.merge_video_listbox.get(0, tk.END):
+                self.merge_video_listbox.insert(tk.END, path)
+
+    def move_merge_video_up(self):
+        selection = self.merge_video_listbox.curselection()
+        if not selection or selection[0] == 0:
+            return
+        idx = selection[0]
+        value = self.merge_video_listbox.get(idx)
+        self.merge_video_listbox.delete(idx)
+        self.merge_video_listbox.insert(idx - 1, value)
+        self.merge_video_listbox.selection_set(idx - 1)
+
+    def move_merge_video_down(self):
+        selection = self.merge_video_listbox.curselection()
+        if not selection or selection[0] == self.merge_video_listbox.size() - 1:
+            return
+        idx = selection[0]
+        value = self.merge_video_listbox.get(idx)
+        self.merge_video_listbox.delete(idx)
+        self.merge_video_listbox.insert(idx + 1, value)
+        self.merge_video_listbox.selection_set(idx + 1)
+
+    def remove_selected_merge_video(self):
+        selection = self.merge_video_listbox.curselection()
+        for idx in reversed(selection):
+            self.merge_video_listbox.delete(idx)
 
 
 if __name__ == "__main__":
