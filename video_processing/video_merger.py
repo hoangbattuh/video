@@ -1,43 +1,29 @@
-"""
-Module ghép video từ nhiều tệp thành một tệp duy nhất.
-"""
-
-import os
 from moviepy.editor import VideoFileClip, concatenate_videoclips
+import os
+import moviepy.config
+moviepy.config.change_settings({"FFMPEG_BINARY": "ffmpeg"})
 
-def merge_videos(input_paths, output_path, stop_flag, update_progress, set_status, messagebox):
-    """Ghép nhiều video thành một video duy nhất."""
+def merge_videos(video_paths, output_path, stop_flag, update_progress, set_status, messagebox):
     try:
-        stop_flag.clear()
         clips = []
-        total_duration = 0
-        try:
-            for path in input_paths:
-                if stop_flag.is_set():
-                    set_status("Tiến trình ghép đã bị dừng.")
-                    messagebox.showinfo("Thông báo", "Tiến trình ghép đã bị dừng.")
-                    update_progress(0)
-                    return
-                clip = VideoFileClip(path)
-                clips.append(clip)
-                total_duration += clip.duration
-            final_clip = concatenate_videoclips(clips)
-            final_clip.write_videofile(
-                output_path,
-                audio_codec="aac",
-                preset="medium",
-                threads=4,
-                logger=None
-            )
-        finally:
-            for clip in clips:
-                clip.close()
-        if not stop_flag.is_set():
-            set_status("✅ Ghép video thành công.")
-            messagebox.showinfo("Hoàn tất", "Đã ghép các video thành công.")
-        update_progress(0)
+        for path in video_paths:
+            if stop_flag.is_set():
+                set_status("Tiến trình ghép đã bị dừng.")
+                messagebox.showinfo("Thông báo", "Tiến trình ghép đã bị dừng.")
+                return
+            clips.append(VideoFileClip(path))
+
+        final_clip = concatenate_videoclips(clips)
+        final_clip.write_videofile(output_path, codec="libx264", audio_codec="aac")
+        set_status("Ghép video hoàn tất!")
+        messagebox.showinfo("Hoàn tất", "Ghép video hoàn tất!")
+
     except Exception as e:
-        set_status(f"❌ Lỗi khi ghép video: {e}")
-        messagebox.showerror("Lỗi", str(e))
-        if os.path.exists(output_path):
-            os.remove(output_path)
+        set_status(f"Lỗi khi ghép video: {e}")
+        messagebox.showerror("Lỗi", f"Đã xảy ra lỗi khi ghép video: {e}")
+    finally:
+        for clip in clips:
+            if clip.is_playing:
+                clip.close()
+        if 'final_clip' in locals() and final_clip.is_playing:
+            final_clip.close()

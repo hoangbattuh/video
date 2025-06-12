@@ -11,8 +11,19 @@ OUTPUT_DIR_NOT_SELECTED_LABEL = "Chưa chọn thư mục đầu ra (Cắt Video)
 # Thông báo thiếu thông tin
 MISSING_INFO_WARNING_TITLE = "Thiếu thông tin"
 SELECT_VIDEO_AND_OUTPUT_DIR_WARNING_MESSAGE = "Vui lòng chọn video và thư mục lưu (Cắt Video)."
+SELECT_OUTPUT_DIR_WARNING_MESSAGE = "Vui lòng chọn thư mục lưu trước khi thực hiện thao tác này."
 
 # Thông báo chung
 NOTIFICATION_TITLE = "Thông báo"
 COMPLETED_TITLE = "Hoàn tất"
 PROCESS_STOPPED_MESSAGE = "Tiến trình cắt đã bị dừng."
+
+# Các hằng số mới
+FONT_FAMILY = "Segoe UI"
+DEFAULT_VIDEO_SELECTION_LABEL = "Chưa có tệp nào được chọn."
+ERROR_WRITE_FILE_TITLE = "Lỗi Ghi File"
+
+SUCCESS_REMOVE_AUDIO_TITLE = "Xóa Âm thanh Thành công"
+SUCCESS_REMOVE_AUDIO_MESSAGE = "Đã xóa âm thanh khỏi video và lưu tại: {}."
+ERROR_REMOVE_AUDIO_TITLE = "Lỗi Xóa Âm thanh"
+ERROR_REMOVE_AUDIO_MESSAGE = "Không thể xóa âm thanh khỏi video. Vui lòng kiểm tra lại đường dẫn và định dạng file."
