@@ -2,16 +2,49 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import threading
 import os
-from gui.constants import NOTIFICATION_TITLE, SELECT_OUTPUT_DIR_BUTTON_TEXT, OUTPUT_DIR_NOT_SELECTED_LABEL, DEFAULT_VIDEO_SELECTION_LABEL, ERROR_WRITE_FILE_TITLE, SUCCESS_REMOVE_AUDIO_TITLE, SUCCESS_REMOVE_AUDIO_MESSAGE, ERROR_REMOVE_AUDIO_TITLE, ERROR_REMOVE_AUDIO_MESSAGE, FONT_FAMILY, START_TIME_LABEL, SELECT_OUTPUT_DIR_WARNING_MESSAGE, MISSING_INFO_WARNING_TITLE, SELECT_VIDEO_AND_OUTPUT_DIR_WARNING_MESSAGE, PROCESS_STOPPED_MESSAGE
+from gui.constants import (
+    NOTIFICATION_TITLE, SELECT_OUTPUT_DIR_BUTTON_TEXT, OUTPUT_DIR_NOT_SELECTED_LABEL, DEFAULT_VIDEO_SELECTION_LABEL, ERROR_WRITE_FILE_TITLE, SUCCESS_REMOVE_AUDIO_TITLE, SUCCESS_REMOVE_AUDIO_MESSAGE, ERROR_REMOVE_AUDIO_TITLE, ERROR_REMOVE_AUDIO_MESSAGE, FONT_FAMILY, START_TIME_LABEL, SELECT_OUTPUT_DIR_WARNING_MESSAGE, MISSING_INFO_WARNING_TITLE, SELECT_VIDEO_AND_OUTPUT_DIR_WARNING_MESSAGE, PROCESS_STOPPED_MESSAGE,
+    ICON_TRIM, ICON_MERGE, ICON_AUDIO, ICON_FOLDER, ICON_ADD, ICON_DELETE, ICON_UP, ICON_DOWN, ICON_START, ICON_STOP, ICON_CUT, ICON_RANDOM, ICON_CHECK, ICON_WARNING, ICON_INFO
+)
 from video_processing.video_cutter import cut_by_segments, cut_by_duration, cut_selected_segment
 from video_processing.video_merger import merge_videos
 from video_processing.video_editor import remove_audio
 
+class ToolTip:
+    """Hiển thị tooltip khi rê chuột lên widget."""
+    def __init__(self, widget, text):
+        self.widget = widget
+        self.text = text
+        self.tipwindow = None
+        widget.bind("<Enter>", self.show_tip)
+        widget.bind("<Leave>", self.hide_tip)
+
+    def show_tip(self, event=None):
+        if self.tipwindow or not self.text:
+            return
+        x, y, _, cy = self.widget.bbox("insert") if hasattr(self.widget, 'bbox') else (0,0,0,0)
+        x = x + self.widget.winfo_rootx() + 25
+        y = y + cy + self.widget.winfo_rooty() + 20
+        self.tipwindow = tw = tk.Toplevel(self.widget)
+        tw.wm_overrideredirect(True)
+        tw.wm_geometry(f"+{x}+{y}")
+        label = tk.Label(tw, text=self.text, justify=tk.LEFT,
+                         background="#ffffe0", relief=tk.SOLID, borderwidth=1,
+                         font=(FONT_FAMILY, 9))
+        label.pack(ipadx=5, ipady=2)
+
+    def hide_tip(self, event=None):
+        tw = self.tipwindow
+        self.tipwindow = None
+        if tw:
+            tw.destroy()
+
 class VideoEditorPro(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Video Editor Pro")
-        self.geometry("800x600")
+        self.title("🎬 Video Editor Pro")
+        self.geometry("900x650")
+        self.minsize(800, 600)
 
         # Cấu hình style cho ứng dụng
         self.style = ttk.Style(self)
@@ -55,7 +88,7 @@ class VideoEditorPro(tk.Tk):
 
             # Tab Cắt Video
         self.trim_tab = ttk.Frame(self.notebook)
-        self.notebook.add(self.trim_tab, text="Cắt Video")
+        self.notebook.add(self.trim_tab, text="🪓 Cắt Video")
 
         # Khu vực tải & xem trước video
         load_preview_frame = ttk.LabelFrame(self.trim_tab, text="Tải & Xem trước Video")
@@ -64,7 +97,10 @@ class VideoEditorPro(tk.Tk):
         select_video_frame = ttk.Frame(load_preview_frame)
         select_video_frame.pack(fill="x", padx=5, pady=5)
 
-        ttk.Button(select_video_frame, text="📂 Chọn Video", command=self.select_video).pack(side="left")
+        # Sử dụng icon cho các nút chính
+        btn_select_video = ttk.Button(select_video_frame, text=f"{ICON_FOLDER} Chọn Video", command=self.select_video)
+        btn_select_video.pack(side="left")
+        ToolTip(btn_select_video, "Chọn video để cắt")
         self.selected_video_label = ttk.Label(select_video_frame, text=DEFAULT_VIDEO_SELECTION_LABEL)
         self.selected_video_label.pack(side="left", padx=5)
 
@@ -113,7 +149,9 @@ class VideoEditorPro(tk.Tk):
 
         output_dir_frame = ttk.Frame(output_frame)
         output_dir_frame.pack(fill="x", padx=5, pady=5)
-        ttk.Button(output_dir_frame, text=SELECT_OUTPUT_DIR_BUTTON_TEXT, command=self.select_output_directory).pack(side="left")
+        btn_select_output = ttk.Button(output_dir_frame, text=SELECT_OUTPUT_DIR_BUTTON_TEXT, command=self.select_output_directory)
+        btn_select_output.pack(side="left")
+        ToolTip(btn_select_output, "Chọn thư mục lưu video đã cắt")
         self.output_dir_label = ttk.Label(output_dir_frame, text=OUTPUT_DIR_NOT_SELECTED_LABEL)
         self.output_dir_label.pack(side="left", padx=5)
 
@@ -122,13 +160,15 @@ class VideoEditorPro(tk.Tk):
 
         self.progress_bar = ttk.Progressbar(progress_stop_frame, orient="horizontal", length=300, mode="determinate")
         self.progress_bar.pack(side="left", fill="x", expand=True, padx=(0, 5))
-        ttk.Button(progress_stop_frame, text="⏹ Dừng Cắt", command=self.stop_processing).pack(side="left")
+        btn_stop = ttk.Button(progress_stop_frame, text=f"{ICON_STOP} Dừng Cắt", command=self.stop_processing)
+        btn_stop.pack(side="left")
+        ToolTip(btn_stop, "Dừng quá trình cắt video")
 
         self.stop_flag = threading.Event()
 
         # Tab Ghép Video
         self.merge_tab = ttk.Frame(self.notebook)
-        self.notebook.add(self.merge_tab, text="Ghép Video")
+        self.notebook.add(self.merge_tab, text="📎 Ghép Video")
         # Khu vực thêm video
         add_video_frame = ttk.LabelFrame(self.merge_tab, text="Thêm Video để Ghép")
         add_video_frame.pack(padx=10, pady=10, fill="x")
@@ -136,7 +176,9 @@ class VideoEditorPro(tk.Tk):
         select_merge_video_frame = ttk.Frame(add_video_frame)
         select_merge_video_frame.pack(fill="x", padx=5, pady=5)
 
-        ttk.Button(select_merge_video_frame, text="➕ Thêm Video", command=self.add_video_to_merge_list).pack(side="left")
+        btn_add_merge = ttk.Button(select_merge_video_frame, text=f"{ICON_ADD} Thêm Video", command=self.add_video_to_merge_list)
+        btn_add_merge.pack(side="left")
+        ToolTip(btn_add_merge, "Thêm video vào danh sách ghép")
         self.merge_video_listbox = tk.Listbox(add_video_frame, height=5)
         self.merge_video_listbox.pack(fill="both", expand=True, padx=5, pady=5)
 
@@ -159,15 +201,19 @@ class VideoEditorPro(tk.Tk):
 
         merge_output_dir_frame = ttk.Frame(merge_output_frame)
         merge_output_dir_frame.pack(fill="x", padx=5, pady=5)
-        ttk.Button(merge_output_dir_frame, text=SELECT_OUTPUT_DIR_BUTTON_TEXT, command=self.select_merge_output_directory).pack(side="left")
+        btn_merge_output = ttk.Button(merge_output_dir_frame, text=SELECT_OUTPUT_DIR_BUTTON_TEXT, command=self.select_merge_output_directory)
+        btn_merge_output.pack(side="left")
+        ToolTip(btn_merge_output, "Chọn thư mục lưu video ghép")
         self.merge_output_dir_label = ttk.Label(merge_output_dir_frame, text=OUTPUT_DIR_NOT_SELECTED_LABEL)
         self.merge_output_dir_label.pack(side="left", padx=5)
 
-        ttk.Button(merge_output_frame, text="🚀 Bắt đầu Ghép", command=self.start_merge_videos).pack(pady=5)
+        btn_start_merge = ttk.Button(merge_output_frame, text=f"{ICON_START} Bắt đầu Ghép", command=self.start_merge_videos)
+        btn_start_merge.pack(pady=5)
+        ToolTip(btn_start_merge, "Bắt đầu quá trình ghép video")
 
         # Tab Xóa Âm thanh
         self.audio_tab = ttk.Frame(self.notebook)
-        self.notebook.add(self.audio_tab, text="Xóa Âm thanh")
+        self.notebook.add(self.audio_tab, text="🔇 Xóa Âm thanh")
         # Khu vực tải & xem trước video
         audio_load_preview_frame = ttk.LabelFrame(self.audio_tab, text="Tải & Xem trước Video (Xóa Âm thanh)")
         audio_load_preview_frame.pack(padx=10, pady=10, fill="x")
@@ -175,7 +221,9 @@ class VideoEditorPro(tk.Tk):
         audio_select_video_frame = ttk.Frame(audio_load_preview_frame)
         audio_select_video_frame.pack(fill="x", padx=5, pady=5)
 
-        ttk.Button(audio_select_video_frame, text="📂 Chọn Video", command=self.select_audio_video).pack(side="left")
+        btn_audio_select = ttk.Button(audio_select_video_frame, text=f"{ICON_FOLDER} Chọn Video", command=self.select_audio_video)
+        btn_audio_select.pack(side="left")
+        ToolTip(btn_audio_select, "Chọn video để xóa âm thanh")
         self.audio_selected_video_label = ttk.Label(audio_select_video_frame, text=DEFAULT_VIDEO_SELECTION_LABEL)
         self.audio_selected_video_label.pack(side="left", padx=5)
         # Tùy chọn xóa âm thanh
@@ -191,15 +239,38 @@ class VideoEditorPro(tk.Tk):
 
         audio_output_dir_frame = ttk.Frame(audio_output_frame)
         audio_output_dir_frame.pack(fill="x", padx=5, pady=5)
-        ttk.Button(audio_output_dir_frame, text=SELECT_OUTPUT_DIR_BUTTON_TEXT, command=self.select_audio_output_directory).pack(side="left")
+        btn_audio_output = ttk.Button(audio_output_dir_frame, text=SELECT_OUTPUT_DIR_BUTTON_TEXT, command=self.select_audio_output_directory)
+        btn_audio_output.pack(side="left")
+        ToolTip(btn_audio_output, "Chọn thư mục lưu video đã xóa âm thanh")
         self.audio_output_dir_label = ttk.Label(audio_output_dir_frame, text=OUTPUT_DIR_NOT_SELECTED_LABEL)
         self.audio_output_dir_label.pack(side="left", padx=5)
 
-        ttk.Button(audio_output_frame, text="🚀 Bắt đầu Xóa Âm thanh", command=self.start_remove_audio).pack(pady=5)
+        btn_start_audio = ttk.Button(audio_output_frame, text=f"{ICON_START} Bắt đầu Xóa Âm thanh", command=self.start_remove_audio)
+        btn_start_audio.pack(pady=5)
+        ToolTip(btn_start_audio, "Bắt đầu quá trình xóa âm thanh khỏi video")
 
         # Thanh trạng thái dưới cùng
         self.status_bar = tk.Label(self, text="Sẵn sàng", bd=1, relief=tk.SUNKEN, anchor=tk.W)
         self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
+
+        # Thêm icon cho tab
+        self.notebook.add(self.trim_tab, text="🪓 Cắt Video")
+        self.notebook.add(self.merge_tab, text="📎 Ghép Video")
+        self.notebook.add(self.audio_tab, text="🔇 Xóa Âm thanh")
+
+        # Tooltip cho các nút chính
+        for btn, tip in [
+            (self.trim_tab.winfo_children()[0].winfo_children()[0].winfo_children()[0], "Chọn video để cắt"),
+            (self.merge_tab.winfo_children()[0].winfo_children()[0].winfo_children()[0], "Thêm video vào danh sách ghép"),
+            (self.audio_tab.winfo_children()[0].winfo_children()[0].winfo_children()[0], "Chọn video để xóa âm thanh")
+        ]:
+            ToolTip(btn, tip)
+
+        # Thêm trạng thái động cho progress bar
+        self.progress_bar['mode'] = 'determinate'
+
+        # Thêm trạng thái động cho status bar
+        self.status_bar.config(font=(FONT_FAMILY, 10), bg='#E0E0E0')
 
     def select_audio_video(self):
         file_path = filedialog.askopenfilename(filetypes=[("Video files", "*.mp4 *.avi *.mov *.mkv")])

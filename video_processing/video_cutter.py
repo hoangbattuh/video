@@ -13,8 +13,8 @@ from gui.constants import (
 
 def cut_by_segments(input_path, output_dir, num_segments, stop_flag, update_progress_safe, set_status_safe, messagebox):
     try:
-        moviepy.config.change_settings({"FFMPEG_BINARY": "ffmpeg"})
-        moviepy.config.change_settings({"FFMPEG_BINARY": "ffmpeg"})
+        import sys
+        import moviepy.config
         moviepy.config.change_settings({"FFMPEG_BINARY": "ffmpeg"})
         clip = VideoFileClip(input_path)
         duration = clip.duration
@@ -36,10 +36,10 @@ def cut_by_segments(input_path, output_dir, num_segments, stop_flag, update_prog
             start_time = i * segment_duration
             end_time = (i + 1) * segment_duration
             output_filename = os.path.join(output_dir, f"segment_{i+1}.mp4")
-            
             try:
                 segment = clip.subclip(start_time, end_time)
-                segment.write_videofile(output_filename, codec="libx264", audio_codec="aac")
+                # Fix: set logger=None to avoid NoneType 'stdout' error
+                segment.write_videofile(output_filename, codec="libx264", audio_codec="aac", logger=None)
                 segment.close()
                 update_progress_safe(int((i + 1) / num_segments * 100))
             except Exception as e:
@@ -81,7 +81,8 @@ def cut_by_duration(input_path, output_dir, segment_duration, stop_flag, update_
 
             try:
                 segment = clip.subclip(start_time, end_time)
-                segment.write_videofile(output_filename, codec="libx264", audio_codec="aac")
+                # Fix: set logger=None to avoid NoneType 'stdout' error
+                segment.write_videofile(output_filename, codec="libx264", audio_codec="aac", logger=None)
                 segment.close()
                 update_progress_safe(int((i + 1) / num_segments * 100))
             except Exception as e:
@@ -136,7 +137,8 @@ def cut_selected_segment(input_path, output_dir, start_time, end_time, stop_flag
 
         try:
             segment = clip.subclip(start_time, end_time)
-            segment.write_videofile(output_filename, codec="libx264", audio_codec="aac")
+            # Fix: set logger=None to avoid NoneType 'stdout' error
+            segment.write_videofile(output_filename, codec="libx264", audio_codec="aac", logger=None)
             segment.close()
             update_progress_safe(100) # Cập nhật hoàn tất 100%
             set_status_safe(COMPLETED_TITLE)
