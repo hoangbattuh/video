@@ -23,10 +23,14 @@ FONT_FAMILY = "Segoe UI"
 DEFAULT_VIDEO_SELECTION_LABEL = "Chưa có tệp nào được chọn."
 ERROR_WRITE_FILE_TITLE = "Lỗi Ghi File"
 
+# Thông báo xóa âm thanh
+REMOVE_AUDIO_TITLE = "Xóa Âm thanh"
 SUCCESS_REMOVE_AUDIO_TITLE = "Xóa Âm thanh Thành công"
-SUCCESS_REMOVE_AUDIO_MESSAGE = "Đã xóa âm thanh khỏi video và lưu tại: {}."
+SUCCESS_REMOVE_AUDIO_MESSAGE = "Đã xóa âm thanh khỏi video và lưu tại:\n{}"
 ERROR_REMOVE_AUDIO_TITLE = "Lỗi Xóa Âm thanh"
-ERROR_REMOVE_AUDIO_MESSAGE = "Không thể xóa âm thanh khỏi video. Vui lòng kiểm tra lại đường dẫn và định dạng file."
+ERROR_REMOVE_AUDIO_MESSAGE = "Không thể xóa âm thanh khỏi video."
+REMOVE_AUDIO_IN_PROGRESS = "Đang xóa âm thanh..."
+REMOVE_AUDIO_COMPLETED = "Đã xóa âm thanh thành công."
 
 # Thêm các hằng số icon/tab cho đồng bộ giao diện
 ICON_TRIM = "🪓"

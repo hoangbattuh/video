@@ -1,28 +1,52 @@
 from moviepy.editor import VideoFileClip
 import moviepy.config
+import os
+import subprocess
+from gui.constants import NOTIFICATION_TITLE, SUCCESS_REMOVE_AUDIO_MESSAGE
+
 moviepy.config.change_settings({"FFMPEG_BINARY": "ffmpeg"})
 
-def remove_audio(input_path, output_path, remove_type="all"):
+def remove_audio(input_path, output_dir, remove_type="all"):
     """
-    Xóa âm thanh khỏi video hoặc tạo bản sao video không có âm thanh.
+    Xóa âm thanh khỏi video sử dụng ffmpeg.
 
     Args:
-        input_path (str): Đường dẫn đến file video đầu vào.
-        output_path (str): Đường dẫn đến file video đầu ra.
-        remove_type (str): Loại bỏ âm thanh. Có thể là "all" (xóa toàn bộ âm thanh)
-                           hoặc "copy" (tạo bản sao không âm thanh, giữ lại bản gốc).
+        input_path (str): Đường dẫn đến file video đầu vào
+        output_dir (str): Thư mục chứa file đầu ra
+        remove_type (str): Loại xóa âm thanh:
+            - "all": Xóa toàn bộ âm thanh
+            - "copy": Tạo bản sao không âm thanh, giữ lại bản gốc
     """
     try:
-        clip = VideoFileClip(input_path)
-        if remove_type == "all":
-            clip_no_audio = clip.without_audio()
-            clip_no_audio.write_videofile(output_path, codec="libx264")
-        elif remove_type == "copy":
-            # Tạo bản sao không âm thanh, giữ lại bản gốc
-            clip_no_audio = clip.without_audio()
-            clip_no_audio.write_videofile(output_path, codec="libx264")
-        clip.close()
-        return True
+        # Tạo tên file đầu ra
+        filename = os.path.basename(input_path)
+        name, ext = os.path.splitext(filename)
+        if remove_type == "copy":
+            output_filename = f"{name}_no_audio{ext}"
+        else:
+            output_filename = f"{name}_muted{ext}"
+        
+        output_path = os.path.join(output_dir, output_filename)
+
+        # Chuẩn bị lệnh ffmpeg
+        cmd = [
+            'ffmpeg',
+            '-i', input_path,
+            '-c:v', 'copy',     # Giữ nguyên codec video
+            '-an',              # Loại bỏ audio stream
+            '-y',               # Ghi đè file nếu đã tồn tại
+            output_path
+        ]
+
+        # Thực thi lệnh
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        
+        if result.returncode != 0:
+            raise Exception(f"FFmpeg error: {result.stderr}")
+
+        return output_path
+
+    except subprocess.CalledProcessError as e:
+        raise Exception(f"Lỗi khi xử lý video: {str(e)}")
     except Exception as e:
-        print(f"Lỗi khi xóa âm thanh: {e}")
-        return False
+        raise Exception(f"Lỗi không xác định: {str(e)}")

@@ -480,17 +480,24 @@ class VideoEditorPro(tk.Tk):
         if not self.audio_output_directory:
             messagebox.showwarning(NOTIFICATION_TITLE, SELECT_OUTPUT_DIR_WARNING_MESSAGE)
             return
-    
+
         input_path = self.audio_selected_video_path
         output_dir = self.audio_output_directory
-        
+        remove_type = "copy"  # hoặc "all" tùy theo radio button được chọn
+
         try:
-            remove_audio(input_path, output_dir)
-            messagebox.showinfo(SUCCESS_REMOVE_AUDIO_TITLE, SUCCESS_REMOVE_AUDIO_MESSAGE)
+            self.set_status("Đang xóa âm thanh...")
+            self.progress_bar['value'] = 0
+            output_path = remove_audio(input_path, output_dir, remove_type)
+            self.progress_bar['value'] = 100
             self.set_status("Đã xóa âm thanh thành công.")
+            messagebox.showinfo(SUCCESS_REMOVE_AUDIO_TITLE, 
+                          SUCCESS_REMOVE_AUDIO_MESSAGE.format(output_path))
         except Exception as e:
-            messagebox.showerror(ERROR_REMOVE_AUDIO_TITLE, ERROR_REMOVE_AUDIO_MESSAGE + f" {str(e)}")
+            messagebox.showerror(ERROR_REMOVE_AUDIO_TITLE, 
+                           ERROR_REMOVE_AUDIO_MESSAGE + f" {str(e)}")
             self.set_status("Xóa âm thanh thất bại.")
+            self.progress_bar['value'] = 0
 
 if __name__ == "__main__":
     import tkinter as tk
