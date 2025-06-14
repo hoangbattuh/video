@@ -115,3 +115,68 @@ video-app-desktop/
 -   **Caption AI**: Phụ đề tự động đa ngôn ngữ.
 -   **Upload API**: Tích hợp API để upload trực tiếp lên các nền tảng.
 -   **GPU acceleration**: Tối ưu hóa sử dụng GPU cho các tác vụ xử lý video.
+
+# 8. Mở rộng chức năng phần mềm
+
+## 🧱 8. Nhóm Chức năng Xử lý Video Cơ Bản (Chi tiết mở rộng)
+
+| Tác vụ | Mô tả |
+|--------|------|
+| ✂️ **Cắt video nâng cao** | - Cắt theo timeline, từng đoạn<br>- Cắt tự động theo cảnh (nếu kết hợp với scene detect)<br>- Cắt theo khung hình/thời gian cụ thể |
+| 📎 **Ghép video** | - Ghép nối tiếp<br>- Ghép có hiệu ứng chuyển cảnh (fade, slide)<br>- Ghép video dọc-ngang tự động căn khung |
+| 🔇 **Xóa âm thanh** | - Xóa track audio<br>- Tách audio sang file riêng |
+| 🔁 **Xoay/flip** | - 90°/180°/flip ngang dọc<br>- Tự xoay dựa vào metadata |
+| 🖼️ **Resize, crop, pad** | - Căn theo preset 9:16, 16:9, 1:1...<br>- Crop giữa/giữ vùng trọng tâm<br>- Padding màu nền/mờ viền |
+| 🏷️ **Chèn logo/watermark** | - 4 góc hoặc theo timeline<br>- Điều chỉnh độ mờ, thời lượng xuất hiện |
+| 📷 **Snapshot frame** | - Trích ảnh từ khung hình bất kỳ (PNG/JPEG) |
+| 🧍 **Track đối tượng** | - Gắn khung vào khuôn mặt hoặc vùng chuyển động |
+| 🪄 **Auto enhancement (nâng sáng, tăng tương phản)** | - Dùng OpenCV auto-contrast hoặc histogram equalization |
+
+## 🎬 9. Nhóm Chức năng Xử lý Nâng Cao
+
+| Tính năng | Mô tả |
+|----------|------|
+| 💬 **Subtitles (phụ đề)** | - Tạo tự động (AI Whisper)<br>- Cho phép sửa<br>- Dịch phụ đề đa ngôn ngữ<br>- Tùy chọn font, màu, vị trí |
+| 🖼️ **Thêm intro/outro** | - Sử dụng template<br>- Thêm tiêu đề, nhạc nền<br>- Auto fit với khung hình chính |
+| 💧 **Watermark động** | - Xuất hiện ở đầu/cuối hoặc theo khoảng thời gian<br>- Có thể dùng ảnh GIF, SVG động |
+| 🎨 **Lọc màu (color filter)** | - Brightness, contrast, saturation<br>- Preset filter (TikTok style, vintage...) |
+| 🌀 **Chuyển cảnh (transition)** | - Fade, zoom, slide, blur giữa 2 video<br>- Có thể áp dụng khi ghép video |
+| 🧠 **Highlight tự động** | - Dựa trên motion/scene/chuyển động gương mặt<br>- Tạo bản highlight ngắn 60s từ video dài |
+| 🔉 **Tách giọng & nhạc nền** | - Dùng AI source separation<br>- Xuất voice riêng hoặc chỉ giữ nhạc |
+| 🎚 **Audio mastering** | - Normalize, fade in/out, khử tiếng ồn<br>- Chuyển sang mono/stereo |
+| 🖌 **Vẽ tay trực tiếp lên video** *(tùy chọn nâng cao)* | - Annotation cho hướng dẫn/trực quan hóa nội dung |
+
+## 📐 10. Quản lý Preset & Cấu hình cá nhân hóa
+
+| Loại preset | Nội dung |
+|-------------|----------|
+| 📱 **Preset TikTok** | 9:16, 1080x1920, max 3 phút, bitrate ~5 Mbps |
+| 📺 **Preset YouTube** | 16:9, 1920x1080, max 15 phút, bitrate ~10 Mbps |
+| 🧭 **Preset Instagram Reel/Facebook** | 9:16, 1080x1920, dưới 90s |
+| 🎞 **Tùy chỉnh preset cá nhân** | - Người dùng có thể lưu lại cấu hình pipeline<br>- Đặt tên, mô tả và chia sẻ với người khác |
+
+## 📦 11. Nhóm Quản lý File & Dự án
+
+| Chức năng | Mô tả |
+|-----------|------|
+| 📁 **Quản lý dự án** | - Tạo dự án, lưu cấu hình chỉnh sửa<br>- Import/export project (zip, JSON) |
+| ⏳ **Ghi nhớ lần làm việc cuối** | - Mở lại project gần nhất<br>- Tự lưu trạng thái pipeline dở dang |
+| 🔄 **Lịch sử chỉnh sửa (undo/redo)** | - Ghi lại thao tác theo từng phiên bản |
+
+## 🛜 12. Hệ thống mở rộng & Tùy chọn
+
+| Tính năng | Mô tả |
+|----------|------|
+| 🧰 **Plugin hệ thống** | - Cho phép thêm module xử lý bên ngoài<br>- Ví dụ: plugin add hiệu ứng đặc biệt, live preview, upload |
+| 🔌 **Giao tiếp REST/gRPC backend** | - Hỗ trợ xử lý video nặng trên backend nếu cần |
+| 📡 **API pipeline nội bộ** | - Cho phép các script hoặc người dùng kỹ thuật tự động hóa qua mã |
+| 🔐 **Xác thực người dùng (nâng cao)** | - Nếu mở rộng thành SaaS, tích hợp đăng nhập người dùng, phân quyền |
+
+## 🧭 Hướng đi phát triển mở rộng trong tương lai
+
+| Mục tiêu | Hướng phát triển |
+|----------|------------------|
+| 🌐 Xuất bản online | Kết nối tài khoản mạng xã hội để upload tự động |
+| 📲 Ứng dụng mobile companion | Đẩy video từ PC sang điện thoại để upload (AirDrop style) |
+| 🧠 Training mô hình riêng | Cho nhận diện cảnh, phụ đề cá nhân hoá theo giọng |
+| ☁️ Xử lý đám mây | Tích hợp nền tảng cloud rendering (GPU cloud / serverless) |

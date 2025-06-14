@@ -6,7 +6,10 @@ from src.renderer.gui.constants import (
     PROCESS_STOPPED_MESSAGE,
     NOTIFICATION_TITLE,
     COMPLETED_TITLE,
-    ERROR_WRITE_FILE_TITLE
+    ERROR_WRITE_FILE_TITLE,
+    UNDO_MESSAGE,
+    ERROR_WRITING_FILE_MESSAGE,
+    ERROR_CUTTING_VIDEO_MESSAGE
 )
 
 def get_video_duration(input_path):
@@ -22,7 +25,7 @@ def get_video_duration(input_path):
         output = subprocess.check_output(cmd).decode().strip()
         return float(output)
     except subprocess.CalledProcessError as e:
-        raise Exception(f"Không thể đọc thời lượng video: {str(e)}")
+        raise RuntimeError(f"Không thể đọc thời lượng video: {str(e)}")
 
 def cut_video_ffmpeg(input_path, output_path, start_time, duration):
     """Cắt video sử dụng ffmpeg"""
@@ -40,7 +43,7 @@ def cut_video_ffmpeg(input_path, output_path, start_time, duration):
         subprocess.run(cmd, check=True, capture_output=True)
         return True
     except subprocess.CalledProcessError as e:
-        raise Exception(f"Lỗi khi cắt video: {e.stderr.decode()}")
+        raise RuntimeError(f"Lỗi khi cắt video: {e.stderr.decode()}")
 
 def cut_by_segments(input_path, output_dir, num_segments, stop_flag, update_progress_safe, set_status_safe, messagebox):
     try:
@@ -48,7 +51,7 @@ def cut_by_segments(input_path, output_dir, num_segments, stop_flag, update_prog
 
         if duration < num_segments:
             messagebox.showwarning(NOTIFICATION_TITLE, "Video quá ngắn để cắt thành số lượng đoạn yêu cầu.")
-            set_status_safe("Hoàn tác.")
+            set_status_safe(UNDO_MESSAGE)
             return
 
         segment_duration = duration / num_segments
@@ -67,17 +70,17 @@ def cut_by_segments(input_path, output_dir, num_segments, stop_flag, update_prog
             try:
                 cut_video_ffmpeg(input_path, output_filename, start_time, current_duration)
                 update_progress_safe(int((i + 1) / num_segments * 100), f"Đang cắt đoạn {i+1}/{num_segments}")
-            except Exception as e:
+            except (subprocess.CalledProcessError, IOError) as e:
                 messagebox.showerror(ERROR_WRITE_FILE_TITLE, f"Không thể ghi tệp {output_filename}: {e}")
-                set_status_safe("Lỗi trong quá trình ghi tệp.")
+                set_status_safe(ERROR_WRITING_FILE_MESSAGE)
                 return
 
         set_status_safe(COMPLETED_TITLE)
         messagebox.showinfo(COMPLETED_TITLE, "Cắt video theo số lượng đoạn hoàn tất!")
 
-    except Exception as e:
+    except (subprocess.CalledProcessError, RuntimeError) as e:
         messagebox.showerror(NOTIFICATION_TITLE, f"Đã xảy ra lỗi: {e}")
-        set_status_safe("Lỗi trong quá trình cắt video.")
+        set_status_safe(ERROR_CUTTING_VIDEO_MESSAGE)
 
 def cut_by_duration(input_path, output_dir, segment_duration, stop_flag, update_progress_safe, set_status_safe, messagebox):
     try:
@@ -85,7 +88,7 @@ def cut_by_duration(input_path, output_dir, segment_duration, stop_flag, update_
 
         if segment_duration > duration:
             messagebox.showwarning(NOTIFICATION_TITLE, "Thời lượng đoạn yêu cầu lớn hơn thời lượng video gốc.")
-            set_status_safe("Hoàn tác.")
+            set_status_safe(UNDO_MESSAGE)
             return
 
         num_segments = math.ceil(duration / segment_duration)
@@ -104,17 +107,17 @@ def cut_by_duration(input_path, output_dir, segment_duration, stop_flag, update_
             try:
                 cut_video_ffmpeg(input_path, output_filename, start_time, current_duration)
                 update_progress_safe(int((i + 1) / num_segments * 100), f"Đang cắt đoạn {i+1}/{num_segments}")
-            except Exception as e:
+            except (subprocess.CalledProcessError, IOError) as e:
                 messagebox.showerror(ERROR_WRITE_FILE_TITLE, f"Không thể ghi tệp {output_filename}: {e}")
-                set_status_safe("Lỗi trong quá trình ghi tệp.")
+                set_status_safe(ERROR_WRITING_FILE_MESSAGE)
                 return
 
         set_status_safe(COMPLETED_TITLE)
         messagebox.showinfo(COMPLETED_TITLE, "Cắt video theo thời lượng hoàn tất!")
 
-    except Exception as e:
+    except (subprocess.CalledProcessError, RuntimeError) as e:
         messagebox.showerror(NOTIFICATION_TITLE, f"Đã xảy ra lỗi: {e}")
-        set_status_safe("Lỗi trong quá trình cắt video.")
+        set_status_safe(ERROR_CUTTING_VIDEO_MESSAGE)
 
 def cut_selected_segment(input_path, output_dir, start_time, end_time, stop_flag, update_progress_safe, set_status_safe, messagebox):
     try:
@@ -122,17 +125,17 @@ def cut_selected_segment(input_path, output_dir, start_time, end_time, stop_flag
 
         if not isinstance(start_time, (int, float)) or not isinstance(end_time, (int, float)):
             messagebox.showerror(NOTIFICATION_TITLE, "Thời gian bắt đầu và kết thúc phải là số.")
-            set_status_safe("Hoàn tác.")
+            set_status_safe(UNDO_MESSAGE)
             return
 
         if start_time < 0 or end_time < 0:
             messagebox.showerror(NOTIFICATION_TITLE, "Thời gian không được là số âm.")
-            set_status_safe("Hoàn tác.")
+            set_status_safe(UNDO_MESSAGE)
             return
 
         if start_time >= end_time:
             messagebox.showerror(NOTIFICATION_TITLE, "Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc.")
-            set_status_safe("Hoàn tác.")
+            set_status_safe(UNDO_MESSAGE)
             return
 
         if end_time > duration:
@@ -152,10 +155,10 @@ def cut_selected_segment(input_path, output_dir, start_time, end_time, stop_flag
             update_progress_safe(100, "Hoàn tất cắt đoạn đã chọn.")
             set_status_safe(COMPLETED_TITLE)
             messagebox.showinfo(COMPLETED_TITLE, "Cắt đoạn đã chọn hoàn tất!")
-        except Exception as e:
+        except (subprocess.CalledProcessError, IOError) as e:
             messagebox.showerror(ERROR_WRITE_FILE_TITLE, f"Không thể ghi tệp {output_filename}: {e}")
-            set_status_safe("Lỗi trong quá trình ghi tệp.")
+            set_status_safe(ERROR_WRITING_FILE_MESSAGE)
 
-    except Exception as e:
+    except (ValueError, TypeError, RuntimeError) as e:
         messagebox.showerror(NOTIFICATION_TITLE, f"Đã xảy ra lỗi: {e}")
-        set_status_safe("Lỗi trong quá trình cắt video.")
+        set_status_safe(ERROR_CUTTING_VIDEO_MESSAGE)

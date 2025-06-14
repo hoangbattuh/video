@@ -22,6 +22,9 @@ PROCESS_STOPPED_MESSAGE = "Tiến trình cắt đã bị dừng."
 FONT_FAMILY = "Segoe UI"
 DEFAULT_VIDEO_SELECTION_LABEL = "Chưa có tệp nào được chọn."
 ERROR_WRITE_FILE_TITLE = "Lỗi Ghi File"
+UNDO_MESSAGE = "Hoàn tác."
+ERROR_WRITING_FILE_MESSAGE = "Lỗi trong quá trình ghi tệp."
+ERROR_CUTTING_VIDEO_MESSAGE = "Lỗi trong quá trình cắt video."
 
 # Thông báo xóa âm thanh
 REMOVE_AUDIO_TITLE = "Xóa Âm thanh"

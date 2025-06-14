@@ -47,6 +47,6 @@ def remove_audio(input_path, output_dir, remove_type="all"):
         return output_path
 
     except subprocess.CalledProcessError as e:
-        raise Exception(f"Lỗi khi xử lý video: {str(e)}")
+        raise RuntimeError(f"Lỗi khi xử lý video: {str(e)}")
     except Exception as e:
-        raise Exception(f"Lỗi không xác định: {str(e)}")
+        raise RuntimeError(f"Lỗi không xác định: {str(e)}")

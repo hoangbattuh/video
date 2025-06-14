@@ -1,10 +1,20 @@
-import React from 'react';
-
-export default function App() {
-  return (
-    <div style={{ padding: '20px' }}>
-      <h1>🎬 Video Editor Pro</h1>
-      <p>Chào mừng bạn đến với ứng dụng chỉnh sửa video!</p>
-    </div>
-  );
-}
+import React, { useState } from 'react' ;
+ import Home from './components/Home' ;
+ import TabSwitcher from './components/TabSwitcher' ;
+ import Footer from './components/Footer' ;
+ import './index.css' ;
+ 
+ export default function App( ) {
+   const [activeTab, setActiveTab] = useState('home' );
+ 
+   return  (
+     <div className="app" >
+       <div className="main-content" >
+         <TabSwitcher activeTab={activeTab} setActiveTab={setActiveTab}  />
+         {activeTab === 'home' && <Home  />}
+         {/* Bạn có thể thêm các tab khác sau */}
+       </div >
+       <Footer  />
+     </div >
+   );
+ }
