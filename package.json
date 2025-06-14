@@ -30,6 +30,8 @@
     "@babel/plugin-transform-runtime": "^7.27.4",
     "@babel/preset-env": "^7.27.2",
     "@babel/preset-react": "^7.27.1",
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "antd": "^5.26.0",
     "css-loader": "^7.1.2",
     "framer-motion": "^11.2.10",
     "react-icons": "^5.2.1",

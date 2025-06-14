@@ -1,0 +1,78 @@
+.cut-video-container {
+  padding: 24px;
+  max-width: 1080px;
+  margin: auto;
+}
+
+.card-section {
+  margin-bottom: 24px;
+}
+
+.video-canvas {
+  width: 100%;
+  border: 1px solid #ccc;
+  background-color: #000;
+  border-radius: 6px;
+}
+
+.options-section {
+  margin: 20px 0;
+}
+
+.checkbox-options {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.slider-section {
+  margin-top: 16px;
+}
+
+.slider-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.log-section {
+  margin-top: 24px;
+  background: #f7f7f7;
+  border-radius: 6px;
+  padding: 16px;
+  min-height: 80px;
+}
+.log-list {
+  max-height: 120px;
+  overflow-y: auto;
+  font-size: 14px;
+  color: #333;
+}
+.log-item {
+  padding: 2px 0;
+  border-bottom: 1px dashed #e0e0e0;
+}
+
+.preview-modal .ant-modal-content {
+  background: #222;
+}
+
+.ant-btn[icon-only] {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.thumb-img {
+  border: 2px solid #eee;
+  border-radius: 4px;
+  margin: 2px;
+  width: 80px;
+  height: 48px;
+  object-fit: cover;
+}
