@@ -1,0 +1,22 @@
+[project]
+name = "video-editor-pro"
+version = "0.1.0"
+
+[tool.poetry]
+name = "video-editor-pro"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+moviepy = "^1.0.3"
+opencv-python = "^4.9.0.80"
+ffmpeg-python = "^0.2.0"
+pyscenecfg = "^0.6.1"
+whisper-cpp-python = "^0.1.9"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.masonry.api"

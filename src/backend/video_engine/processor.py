@@ -1,0 +1,1 @@
+# Xử lý video: resize, render

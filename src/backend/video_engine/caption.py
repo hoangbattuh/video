@@ -1,0 +1,1 @@
+# Xử lý phụ đề: Whisper caption
