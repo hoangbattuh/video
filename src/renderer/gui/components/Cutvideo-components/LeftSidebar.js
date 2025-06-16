@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { Card, Typography, Tooltip } from 'antd';
 import RecentFilesList from './RecentFilesList';
-import styles from './PresetPlatform.module.css';
+import './PresetPlatform.css';
 
 const { Title, Text } = Typography;
 
@@ -41,19 +41,16 @@ const LeftSidebar = memo(({
               placement="right"
             >
               <div
-                className={
-                  styles['preset-item'] +
-                  (selectedPreset === key ? ' ' + styles['selected'] : '')
-                }
+                className={`preset-item ${selectedPreset === key ? 'selected' : ''}`}
                 onClick={() => applyPreset(key)}
                 tabIndex={0}
                 role="button"
                 style={{ outline: 'none' }}
               >
-                <span className={styles['preset-icon']}>{preset.icon}</span>
-                <div className={styles['preset-info']}>
-                  <span className={styles['preset-title']}>{preset.name}</span>
-                  <span className={styles['preset-desc']}>
+                <span className="preset-icon">{preset.icon}</span>
+                <div className="preset-info">
+                  <span className="preset-title">{preset.name}</span>
+                  <span className="preset-desc">
                     {preset.aspectRatio} • {preset.maxDuration}s
                   </span>
                 </div>
