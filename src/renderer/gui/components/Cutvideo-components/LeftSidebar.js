@@ -7,6 +7,7 @@ const { Title, Text } = Typography;
 const LeftSidebar = memo(({ 
   recentFiles, 
   handleFileSelect, 
+  removeFile,
   platformPresets, 
   selectedPreset, 
   applyPreset, 
@@ -20,9 +21,9 @@ const LeftSidebar = memo(({
           📁 File gần đây
         </Title>
         <RecentFilesList
-          files={recentFiles}
-          onFileSelect={handleFileSelect}
-          maxItems={5}
+          recentFiles={recentFiles}
+          handleFileSelect={handleFileSelect}
+          removeFile={removeFile}
         />
       </Card>
 

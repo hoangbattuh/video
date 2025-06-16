@@ -4,8 +4,9 @@ import React, {
   useCallback,
   useEffect,
   memo,
+  useMemo,
 } from "react";
-import { message } from "antd";
+import { message, Menu } from "antd";
 
 import ProgressModal from "./Cutvideo-components/ProgressModal";
 import Header from "./Cutvideo-components/Header";
@@ -83,7 +84,7 @@ const CutVideo = memo(() => {
       }
     };
     input.click();
-  }, [handleFileSelect]);
+  }, []);
 
   // Xử lý tải video với tối ưu hóa
   const handleFileSelect = useCallback(
@@ -123,7 +124,7 @@ const CutVideo = memo(() => {
         removeFile(fileInfo.id);
       };
     },
-    [addFile, updateVideoState, initWorker, removeFile, renderFrame]
+    [addFile, updateVideoState, initWorker, removeFile, setVideoInfo]
   );
 
   // Render khung hình hiện tại với tối ưu hóa
@@ -178,7 +179,7 @@ const CutVideo = memo(() => {
     } finally {
       setShowProgressModal(false);
     }
-  }, [videoInfo, processVideo]);
+  }, [videoInfo, processVideo, setShowProgressModal]);
 
   // Add showProgressModal state
   const [showProgressModal, setShowProgressModal] = useState(false);
@@ -261,18 +262,9 @@ const CutVideo = memo(() => {
     ]
   );
 
-  // Định dạng thời gian
-  const formatTime = useCallback((seconds) => {
-    if (!seconds || isNaN(seconds)) return "00:00";
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
-  }, []);
 
-  // Kiểm tra có file được chọn không
-  const showNoFileNotice = !videoInfo.selectedFile;
+
+
 
   // Xử lý drag & drop
   const handleDrop = useCallback(
@@ -439,77 +431,17 @@ const CutVideo = memo(() => {
     []
   );
 
-  // Nhóm tùy chọn theo category
-  const groupedOptions = useMemo(() => {
-    return advancedOptions.reduce((groups, option) => {
-      const category = option.category;
-      if (!groups[category]) {
-        groups[category] = [];
-      }
-      groups[category].push(option);
-      return groups;
-    }, {});
-  }, [advancedOptions]);
+
 
   // Helper functions
 
-  const getOptionDescription = useCallback((option) => {
-    const descriptions = {
-      frameCut: "Cắt chính xác theo từng frame",
-      sceneDetection: "Tự động phát hiện thay đổi cảnh",
-      motionDetection: "Phát hiện chuyển động trong video",
-      faceDetection: "Nhận diện khuôn mặt trong video",
-      audioSpike: "Phát hiện âm thanh đột ngột",
-      silenceDetection: "Tìm các đoạn im lặng",
-      autoCenter: "Tự động căn giữa đối tượng chính",
-      logoRemoval: "Loại bỏ logo và watermark",
-      preserveAudio: "Giữ nguyên chất lượng âm thanh",
-      batchProcessing: "Xử lý nhiều file cùng lúc",
-      transitions: "Thêm hiệu ứng chuyển tiếp",
-      keepMetadata: "Giữ thông tin metadata gốc",
-    };
-    return descriptions[option] || "Tính năng nâng cao";
-  }, []);
 
-  const toggleTheme = useCallback(() => {
-    setTheme((prev) => {
-      const newTheme = prev === "light" ? "dark" : "light";
-      localStorage.setItem("videoEditor_theme", newTheme);
-      return newTheme;
-    });
-  }, []);
 
-  const saveSettings = useCallback(() => {
-    const settings = {
-      videoInfo,
-      theme,
-      autoSave,
-      showTooltips,
-      saveDir,
-    };
-    localStorage.setItem("videoEditorSettings", JSON.stringify(settings));
-    message.success("Đã lưu cài đặt!");
-    setShowSettings(false);
-  }, [videoInfo, theme, autoSave, showTooltips, saveDir]);
 
-  const resetSettings = useCallback(() => {
-    setVideoInfo({
-      cutStart: 0,
-      cutEnd: 10,
-      mode: "manual",
-      segmentTime: 15,
-      segmentCount: 3,
-      multiType: "duration",
-      lossless: true,
-      snapKeyframe: true,
-      advancedOptions: {},
-      selectedFile: null,
-    });
-    setTheme("light");
-    setAutoSave(true);
-    setShowTooltips(true);
-    message.info("Đã khôi phục cài đặt mặc định!");
-  }, []);
+
+
+
+
 
   // Xử lý thay đổi slider timeline
   const handleTimelineChange = useCallback(
@@ -560,11 +492,7 @@ const CutVideo = memo(() => {
     }
   }, []);
 
-  // Load theme
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("videoEditor_theme") || "light";
-    setTheme(savedTheme);
-  }, []);
+
 
   // Thêm hiệu ứng loading khi đang xử lý video
   useEffect(() => {
@@ -588,66 +516,11 @@ const CutVideo = memo(() => {
     }
   }, [videoState.isPlaying, renderFrame]);
 
-  // Preset configurations for different platforms
-  const platformPresets = useMemo(() => ({
-    tiktok: {
-      name: "TikTok",
-      aspectRatio: "9:16",
-      resolution: "1080x1920",
-      duration: 60,
-      effects: ["fade-in", "fade-out"],
-      music: "trending",
-      icon: "📱"
-    },
-    youtube: {
-      name: "YouTube",
-      aspectRatio: "16:9", 
-      resolution: "1920x1080",
-      duration: 300,
-      effects: ["intro", "outro"],
-      music: "background",
-      icon: "🎬"
-    },
-    instagram: {
-      name: "Instagram",
-      aspectRatio: "1:1",
-      resolution: "1080x1080",
-      duration: 90,
-      effects: ["filter", "transition"],
-      music: "upbeat",
-      icon: "📷"
-    },
-    facebook: {
-      name: "Facebook",
-      aspectRatio: "16:9",
-      resolution: "1280x720",
-      duration: 180,
-      effects: ["captions", "thumbnail"],
-      music: "ambient",
-      icon: "👥"
-    }
-  }), []);
 
-  const [selectedPreset, setSelectedPreset] = useState(null);
 
-  const applyPreset = useCallback((presetKey) => {
-    const preset = platformPresets[presetKey];
-    if (preset) {
-      setVideoInfo(prev => ({
-        ...prev,
-        cutEnd: Math.min(preset.duration, videoState.duration || preset.duration),
-        advancedOptions: {
-          ...prev.advancedOptions,
-          aspectRatio: preset.aspectRatio,
-          resolution: preset.resolution,
-          effects: preset.effects,
-          music: preset.music
-        }
-      }));
-      setSelectedPreset(presetKey);
-      message.success(`Đã áp dụng preset ${preset.name}`);
-    }
-  }, [platformPresets, videoState.duration]);
+
+
+
 
   return (
     <div
@@ -675,6 +548,7 @@ const CutVideo = memo(() => {
           theme={theme}
           recentFiles={recentFiles}
           handleFileSelect={handleFileSelect}
+          removeFile={removeFile}
           platformPresets={platformPresets}
           selectedPreset={selectedPreset}
           applyPreset={applyPreset}
