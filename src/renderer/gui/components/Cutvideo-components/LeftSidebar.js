@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
-import { Card, Typography, Button, Tooltip } from 'antd';
+import { Card, Typography, Tooltip } from 'antd';
 import RecentFilesList from './RecentFilesList';
+import styles from './PresetPlatform.module.css';
 
 const { Title, Text } = Typography;
 
@@ -32,28 +33,31 @@ const LeftSidebar = memo(({
         <Title level={5} className="mb-3">
           🎯 Preset nền tảng
         </Title>
-        <div className="space-y-2">
+        <div>
           {Object.entries(platformPresets).map(([key, preset]) => (
             <Tooltip 
               key={key} 
               title={showTooltips ? preset.description : ""}
               placement="right"
             >
-              <Button
-                block
-                size="small"
-                type={selectedPreset === key ? "primary" : "default"}
+              <div
+                className={
+                  styles['preset-item'] +
+                  (selectedPreset === key ? ' ' + styles['selected'] : '')
+                }
                 onClick={() => applyPreset(key)}
-                className="text-left flex items-center justify-start"
+                tabIndex={0}
+                role="button"
+                style={{ outline: 'none' }}
               >
-                <span className="mr-2">{preset.icon}</span>
-                <div className="flex-1">
-                  <div className="font-medium">{preset.name}</div>
-                  <div className="text-xs opacity-75">
+                <span className={styles['preset-icon']}>{preset.icon}</span>
+                <div className={styles['preset-info']}>
+                  <span className={styles['preset-title']}>{preset.name}</span>
+                  <span className={styles['preset-desc']}>
                     {preset.aspectRatio} • {preset.maxDuration}s
-                  </div>
+                  </span>
                 </div>
-              </Button>
+              </div>
             </Tooltip>
           ))}
         </div>
