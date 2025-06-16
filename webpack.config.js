@@ -34,6 +34,9 @@ module.exports = {
   },
   resolve: {
     extensions: ['.js', '.jsx', '.css'],
+    alias: {
+      'prop-types': path.resolve(__dirname, 'node_modules/prop-types'),
+    },
   },
   target: 'electron-renderer',
   plugins: [
