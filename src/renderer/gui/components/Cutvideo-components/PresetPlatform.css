@@ -5,15 +5,20 @@
   margin-bottom: 8px;
   border-radius: 8px;
   background: var(--background-color, #fff);
-  transition: all 0.2s ease;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
   cursor: pointer;
   border: 1px solid var(--border-color, #e6e6e6);
+  height: 64px; /* Cố định chiều cao */
+  box-sizing: border-box; /* Đảm bảo padding không làm thay đổi kích thước */
+  position: relative; /* Cho phép định vị con chuẩn xác */
+  width: 100%; /* Đảm bảo chiều rộng luôn full */
 }
 
 .preset-item:hover {
   background: var(--hover-background, #f5f5f5);
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  z-index: 1; /* Đảm bảo shadow hiển thị đẹp */
 }
 
 .preset-item.selected {
@@ -33,6 +38,8 @@
   display: flex;
   flex-direction: column;
   flex: 1;
+  min-width: 0; /* Ngăn flex-item bị overflow */
+  overflow: hidden; /* Ẩn nội dung bị tràn */
 }
 
 .preset-title {
@@ -40,11 +47,17 @@
   font-size: 14px;
   color: var(--text-color, #262626);
   margin-bottom: 2px;
+  white-space: nowrap; /* Không cho phép xuống dòng */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Hiện ... nếu text dài */
 }
 
 .preset-desc {
   font-size: 12px;
   color: var(--desc-color, #8c8c8c);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Dark mode support */
