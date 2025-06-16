@@ -2,11 +2,9 @@ import React from "react";
 import {
   Slider,
   Button,
-  Title,
-  Text,
+  Typography,
   Tooltip,
   Dropdown,
-  Typography,
 } from "antd";
 import PropTypes from "prop-types";
 import {
@@ -52,20 +50,13 @@ const VideoPlayer = ({
         }`}
       >
         <div className="text-center p-8">
-          <span className="text-6xl text-gray-400 mb-4">🎬</span>
+          <span className="text-6xl text-gray-400 mb-4">3ac</span>
           <span
             className={`text-lg block mb-2 ${
               theme === "dark" ? "text-gray-300" : "text-gray-500"
             }`}
           >
-            Kéo thả video vào đây hoặc click để tải
-          </span>
-          <span
-            className={`text-sm ${
-              theme === "dark" ? "text-gray-400" : "text-gray-400"
-            }`}
-          >
-            Hỗ trợ: MP4, AVI, MOV, MKV, WebM
+            Chưa có video nào được chọn
           </span>
         </div>
       </div>

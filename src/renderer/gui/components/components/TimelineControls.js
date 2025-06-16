@@ -1,5 +1,5 @@
 import React from 'react';
-import { Slider,Typography , InputNumber, Button, Space, Menu, Dropdown, Tooltip, Card, Row, Col, Divider } from 'antd';
+import { Slider, Typography, InputNumber, Button, Space, Tooltip, Card, Row, Col } from 'antd';
 import PropTypes from 'prop-types';
 const { Title, Text } = Typography;
 import { BackwardOutlined, ForwardOutlined } from '@ant-design/icons';
@@ -16,7 +16,9 @@ const TimelineControls = ({
 }) => (
   <Card className={`rounded-xl mb-4 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white'}`}>
     <div className="flex items-center justify-between mb-3">
-      <Title level={5} className={`mb-0 ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Điều chỉnh vùng cắt</Title>
+      <Title level={5} className={`mb-0 ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>
+        Điều chỉnh vùng cắt
+      </Title>
       <Space>
         <Tooltip title="Đặt điểm bắt đầu">
           <Button
@@ -47,7 +49,10 @@ const TimelineControls = ({
         range
         min={0}
         max={videoState.duration || 100}
-        value={[videoInfo.cutStart, videoInfo.cutEnd]}
+        value={[
+          Math.max(0, Math.min(videoInfo.cutStart, videoInfo.cutEnd)),
+          Math.max(0, Math.max(videoInfo.cutStart, videoInfo.cutEnd))
+        ]}
         step={0.1}
         onChange={handleTimelineChange}
         tooltip={{ formatter: formatTime }}
@@ -58,52 +63,38 @@ const TimelineControls = ({
       <Col xs={24} sm={8}>
         <div className="text-center p-2 bg-blue-50 rounded border border-blue-200">
           <Text strong className="text-blue-600 block text-xs mb-1">BẮT ĐẦU</Text>
-          <Text strong className="text-blue-700">{formatTime(videoInfo.cutStart)}</Text>
+          <InputNumber
+            min={0}
+            max={videoState.duration}
+            step={0.1}
+            value={videoInfo.cutStart}
+            onChange={val => setVideoInfo(prev => ({ ...prev, cutStart: val }))}
+            className="w-full"
+          />
         </div>
       </Col>
       <Col xs={24} sm={8}>
         <div className="text-center p-2 bg-green-50 rounded border border-green-200">
           <Text strong className="text-green-600 block text-xs mb-1">KẾT THÚC</Text>
-          <Text strong className="text-green-700">{formatTime(videoInfo.cutEnd)}</Text>
+          <InputNumber
+            min={0}
+            max={videoState.duration}
+            step={0.1}
+            value={videoInfo.cutEnd}
+            onChange={val => setVideoInfo(prev => ({ ...prev, cutEnd: val }))}
+            className="w-full"
+          />
         </div>
       </Col>
       <Col xs={24} sm={8}>
-        <div className="text-center p-2 bg-red-50 rounded border border-red-200">
-          <Text strong className="text-red-600 block text-xs mb-1">ĐỘ DÀI</Text>
-          <Text strong className="text-red-700">{formatTime(videoInfo.cutEnd - videoInfo.cutStart)}</Text>
+        <div className="text-center p-2 bg-yellow-50 rounded border border-yellow-200">
+          <Text strong className="text-yellow-600 block text-xs mb-1">THỜI LƯỢNG</Text>
+          <span className="block text-lg font-bold">
+            {formatTime(Math.max(0, videoInfo.cutEnd - videoInfo.cutStart))}
+          </span>
         </div>
       </Col>
     </Row>
-    <Divider className="my-3" />
-    <div className="flex flex-wrap gap-2">
-      <Button
-        size="small"
-        onClick={() => {
-          const duration = videoState.duration;
-          setVideoInfo(prev => ({ ...prev, cutStart: 0, cutEnd: duration }));
-        }}
-      >
-        Toàn bộ video
-      </Button>
-      <Button
-        size="small"
-        onClick={() => {
-          const current = videoState.currentTime;
-          setVideoInfo(prev => ({ ...prev, cutStart: Math.max(0, current - 30), cutEnd: Math.min(videoState.duration, current + 30) }));
-        }}
-      >
-        ±30s từ hiện tại
-      </Button>
-      <Button
-        size="small"
-        onClick={() => {
-          const current = videoState.currentTime;
-          setVideoInfo(prev => ({ ...prev, cutStart: Math.max(0, current - 60), cutEnd: Math.min(videoState.duration, current + 60) }));
-        }}
-      >
-        ±1 phút từ hiện tại
-      </Button>
-    </div>
   </Card>
 );
 

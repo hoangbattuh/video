@@ -461,6 +461,21 @@ const CutVideo = memo(() => {
     setTheme(savedTheme);
   }, []);
 
+  // Thêm hiệu ứng loading khi đang xử lý video
+  useEffect(() => {
+    if (processing) {
+      document.body.style.cursor = 'wait';
+    } else {
+      document.body.style.cursor = 'default';
+    }
+    return () => {
+      document.body.style.cursor = 'default';
+    };
+  }, [processing]);
+
+  // Tối ưu UI: Hiển thị thông báo khi không có file video được chọn
+  const showNoFileNotice = !videoInfo.selectedFile;
+
   // Tự động render frame
   useEffect(() => {
     if (videoState.isPlaying) {
@@ -473,19 +488,9 @@ const CutVideo = memo(() => {
 
   // Thay thế các phần UI lớn bằng component đã tách
   return (
-    <div className={`min-h-screen transition-all duration-300 ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`} onDrop={handleDrop} onDragOver={handleDragOver}>
-      <div className="p-4 max-w-7xl mx-auto">
-        {/* Recent Files */}
-        <RecentFilesList recentFiles={recentFiles} handleFileSelect={handleFileSelect} removeFile={removeFile} />
-        {/* Hiển thị lỗi */}
-        {error && (
-          <div className="mb-4">
-            <span className="text-red-500">{error}</span>
-          </div>
-        )}
-        {/* Modal tiến trình */}
-        <ProgressModal showProgressModal={showProgressModal} theme={theme} progress={progress} processing={processing} videoInfo={videoInfo} />
-        <div className="main-content">
+    <div className={`cut-video-wrapper ${theme}`}> 
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="w-full md:w-2/3">
           <VideoPlayer
             videoRef={videoRef}
             videoState={videoState}
@@ -510,8 +515,28 @@ const CutVideo = memo(() => {
             renderFrame={renderFrame}
             theme={theme}
           />
+          {showNoFileNotice && (
+            <div className="p-6 text-center text-gray-500 bg-gray-100 rounded-xl mt-4">
+              <span>Vui lòng chọn một file video để bắt đầu chỉnh sửa.</span>
+            </div>
+          )}
+        </div>
+        <div className="w-full md:w-1/3">
+          <RecentFilesList recentFiles={recentFiles} handleFileSelect={handleFileSelect} removeFile={removeFile} />
+          <button
+            className="w-full mt-4 py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+            onClick={selectSaveDirectory}
+          >
+            Chọn thư mục lưu video
+          </button>
         </div>
       </div>
+      <ProgressModal showProgressModal={showProgressModal} theme={theme} progress={progress} processing={processing} videoInfo={videoInfo} />
+      {error && (
+        <div className="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded shadow-lg z-50">
+          {error}
+        </div>
+      )}
     </div>
   );
 });
