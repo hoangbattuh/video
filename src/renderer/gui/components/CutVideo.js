@@ -8,7 +8,6 @@ import VideoPlayer from './components/VideoPlayer';
 import TimelineControls from './components/TimelineControls';
 import RecentFilesList from './components/RecentFilesList';
 import ProgressModal from './components/ProgressModal';
-import SettingsTabs from './components/SettingsTabs';
 
 const CutVideo = memo(() => {
   const [videoInfo, setVideoInfo] = useState({
@@ -510,24 +509,6 @@ const CutVideo = memo(() => {
             seekTo={seekTo}
             renderFrame={renderFrame}
             theme={theme}
-          />
-          <SettingsTabs
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            theme={theme}
-            videoInfo={videoInfo}
-            handleModeChange={handleModeChange}
-            handleAdvancedOptionChange={handleAdvancedOptionChange}
-            setVideoInfo={setVideoInfo}
-            saveDir={saveDir}
-            autoSave={autoSave}
-            setAutoSave={setAutoSave}
-            showTooltips={showTooltips}
-            setShowTooltips={setShowTooltips}
-            advancedOptions={advancedOptions}
-            getOptionDescription={getOptionDescription}
-            groupedOptions={groupedOptions}
-            toggleTheme={toggleTheme}
           />
         </div>
       </div>
