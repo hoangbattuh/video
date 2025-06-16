@@ -33,29 +33,33 @@ const LeftSidebar = memo(({
         <Title level={5} className="mb-3">
           🎯 Preset nền tảng
         </Title>
-        <div>
+        <div className="preset-container">
           {Object.entries(platformPresets).map(([key, preset]) => (
-            <Tooltip 
-              key={key} 
-              title={showTooltips ? preset.description : ""}
-              placement="right"
-            >
-              <div
-                className={`preset-item ${selectedPreset === key ? 'selected' : ''}`}
-                onClick={() => applyPreset(key)}
-                tabIndex={0}
-                role="button"
-                style={{ outline: 'none' }}
+            <div key={key} className="preset-wrapper">
+              <Tooltip 
+                title={showTooltips ? preset.description : ""}
+                placement="right"
+                mouseEnterDelay={0.5}
+                overlayStyle={{ maxWidth: 300 }}
+                color="#1f1f1f"
+                destroyTooltipOnHide
               >
-                <span className="preset-icon">{preset.icon}</span>
-                <div className="preset-info">
-                  <span className="preset-title">{preset.name}</span>
-                  <span className="preset-desc">
-                    {preset.aspectRatio} • {preset.maxDuration}s
-                  </span>
+                <div
+                  className={`preset-item ${selectedPreset === key ? 'selected' : ''}`}
+                  onClick={() => applyPreset(key)}
+                  tabIndex={0}
+                  role="button"
+                >
+                  <span className="preset-icon">{preset.icon}</span>
+                  <div className="preset-info">
+                    <span className="preset-title">{preset.name}</span>
+                    <span className="preset-desc">
+                      {preset.aspectRatio} • {preset.maxDuration}s
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </Tooltip>
+              </Tooltip>
+            </div>
           ))}
         </div>
       </Card>
