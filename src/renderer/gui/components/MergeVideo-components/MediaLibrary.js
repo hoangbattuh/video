@@ -27,8 +27,9 @@ const MediaLibrary = memo(({
   const [filterType, setFilterType] = useState('all');
   const [sortBy, setSortBy] = useState('name');
 
-  // Lọc và sắp xếp files
-  const filteredFiles = videoFiles
+  const safeVideoFiles = Array.isArray(videoFiles) ? videoFiles : [];
+
+  const filteredFiles = safeVideoFiles
     .filter(file => {
       const matchesSearch = file.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesFilter = filterType === 'all' || file.type.includes(filterType);
@@ -82,6 +83,7 @@ const MediaLibrary = memo(({
         title="📁 Thư viện Video" 
         size="small"
         className="mb-4"
+        styles={{ body: { padding: 0 } }}
         extra={
           <Upload
             multiple
@@ -100,9 +102,8 @@ const MediaLibrary = memo(({
           </Upload>
         }
       >
-        {/* Search và Filter */}
         {currentMode !== 'beginner' && (
-          <Space direction="vertical" className="w-full mb-4">
+          <Space direction="vertical" className="w-full mb-4 p-4 pt-2">
             <Search
               placeholder="Tìm kiếm video..."
               value={searchTerm}
@@ -142,7 +143,6 @@ const MediaLibrary = memo(({
           </Space>
         )}
 
-        {/* Danh sách Video */}
         <List
           size="small"
           dataSource={filteredFiles}
@@ -202,16 +202,19 @@ const MediaLibrary = memo(({
         />
       </Card>
 
-      {/* Thống kê nhanh */}
-      {currentMode !== 'beginner' && videoFiles.length > 0 && (
-        <Card size="small" title="📊 Thống kê">
+      {currentMode !== 'beginner' && safeVideoFiles.length > 0 && (
+        <Card 
+          size="small" 
+          title="📊 Thống kê"
+          styles={{ body: { padding: 12 } }}
+        >
           <div className="text-sm space-y-1">
-            <div>Tổng video: <strong>{videoFiles.length}</strong></div>
+            <div>Tổng video: <strong>{safeVideoFiles.length}</strong></div>
             <div>Tổng dung lượng: <strong>
-              {formatFileSize(videoFiles.reduce((sum, file) => sum + file.size, 0))}
+              {formatFileSize(safeVideoFiles.reduce((sum, file) => sum + file.size, 0))}
             </strong></div>
             <div>Tổng thời lượng: <strong>
-              {formatDuration(videoFiles.reduce((sum, file) => sum + (file.duration || 0), 0))}
+              {formatDuration(safeVideoFiles.reduce((sum, file) => sum + (file.duration || 0), 0))}
             </strong></div>
           </div>
         </Card>

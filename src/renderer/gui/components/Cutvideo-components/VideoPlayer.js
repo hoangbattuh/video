@@ -1,4 +1,5 @@
 import React from "react";
+import { formatTime } from "../../utils/formatTime";
 import {
   Slider,
   Button,
@@ -18,6 +19,15 @@ import {
   FullscreenExitOutlined,
 } from "@ant-design/icons";
 
+const tooltipStyle = {
+  body: {
+    maxWidth: 250,
+    padding: '8px 12px',
+    fontSize: '12px',
+    lineHeight: '1.5',
+  },
+};
+
 const VideoPlayer = ({
   videoRef,
   videoState,
@@ -33,9 +43,7 @@ const VideoPlayer = ({
   theme,
 }) => (
   <div
-    className={`relative rounded-xl overflow-hidden mb-4 ${
-      theme === "dark" ? "bg-gray-900" : "bg-black"
-    }`}
+    className={`relative rounded-xl overflow-hidden mb-4 ${theme === "dark" ? "bg-gray-900" : "bg-black"}`}
   >
     <video
       ref={videoRef}
@@ -50,22 +58,20 @@ const VideoPlayer = ({
         }`}
       >
         <div className="text-center p-8">
-          <span className="text-6xl text-gray-400 mb-4">3ac</span>
-          <span
-            className={`text-lg block mb-2 ${
-              theme === "dark" ? "text-gray-300" : "text-gray-500"
-            }`}
-          >
+          <span className="text-6xl text-gray-400 mb-4">🎬</span>
+          <span className={`text-lg block mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-500"}`}>
             Chưa có video nào được chọn
           </span>
         </div>
       </div>
     )}
+
     {videoState.duration > 0 && (
       <div className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300">
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
+
         <div className="absolute top-4 right-4 flex space-x-2">
-          <Tooltip title="Tốc độ phát">
+          <Tooltip title="Tốc độ phát" destroyOnHidden styles={tooltipStyle}>
             <Dropdown overlay={speedMenu} trigger={["click"]}>
               <Button
                 type="text"
@@ -76,64 +82,60 @@ const VideoPlayer = ({
               </Button>
             </Dropdown>
           </Tooltip>
-          <Tooltip title="Toàn màn hình">
+
+          <Tooltip title="Toàn màn hình" destroyOnHidden styles={tooltipStyle}>
             <Button
               type="text"
-              icon={
-                document.fullscreenElement ? (
-                  <FullscreenExitOutlined />
-                ) : (
-                  <FullscreenOutlined />
-                )
-              }
+              icon={document.fullscreenElement ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
               className="text-white bg-black/50 hover:bg-black/70"
               size="small"
               onClick={handleFullscreen}
             />
           </Tooltip>
         </div>
+
         <div className="absolute inset-0 flex items-center justify-center">
           <Button
             type="text"
-            icon={
-              videoState.isPlaying ? <PauseOutlined /> : <PlayCircleOutlined />
-            }
+            icon={videoState.isPlaying ? <PauseOutlined /> : <PlayCircleOutlined />}
             onClick={togglePlayPause}
             className="text-white text-4xl w-16 h-16 flex items-center justify-center bg-black/50 hover:bg-black/70 rounded-full"
           />
         </div>
+
         <div className="absolute bottom-4 left-4 right-4">
           <div className="flex items-center space-x-3">
-            <Button
-              type="text"
-              icon={<StepBackwardOutlined />}
-              onClick={() => seekTo(Math.max(0, videoState.currentTime - 10))}
-              className="text-white bg-black/50 hover:bg-black/70"
-              size="small"
-            />
-            <Button
-              type="text"
-              icon={
-                videoState.isPlaying ? (
-                  <PauseOutlined />
-                ) : (
-                  <PlayCircleOutlined />
-                )
-              }
-              onClick={togglePlayPause}
-              className="text-white bg-black/50 hover:bg-black/70"
-            />
-            <Button
-              type="text"
-              icon={<StepForwardOutlined />}
-              onClick={() =>
-                seekTo(
-                  Math.min(videoState.duration, videoState.currentTime + 10)
-                )
-              }
-              className="text-white bg-black/50 hover:bg-black/70"
-              size="small"
-            />
+            <Tooltip title="Lùi 10 giây" destroyOnHidden styles={tooltipStyle}>
+              <Button
+                type="text"
+                icon={<StepBackwardOutlined />}
+                onClick={() => seekTo(Math.max(0, videoState.currentTime - 10))}
+                className="text-white bg-black/50 hover:bg-black/70"
+                size="small"
+              />
+            </Tooltip>
+
+            <Tooltip title={videoState.isPlaying ? "Tạm dừng" : "Phát"} destroyOnHidden styles={tooltipStyle}>
+              <Button
+                type="text"
+                icon={videoState.isPlaying ? <PauseOutlined /> : <PlayCircleOutlined />}
+                onClick={togglePlayPause}
+                className="text-white bg-black/50 hover:bg-black/70"
+              />
+            </Tooltip>
+
+            <Tooltip title="Tiến 10 giây" destroyOnHidden styles={tooltipStyle}>
+              <Button
+                type="text"
+                icon={<StepForwardOutlined />}
+                onClick={() =>
+                  seekTo(Math.min(videoState.duration, videoState.currentTime + 10))
+                }
+                className="text-white bg-black/50 hover:bg-black/70"
+                size="small"
+              />
+            </Tooltip>
+
             <div className="flex-1 mx-4">
               <Slider
                 min={0}
@@ -145,14 +147,18 @@ const VideoPlayer = ({
                 className="video-progress-slider"
               />
             </div>
+
             <div className="flex items-center space-x-2">
-              <Button
-                type="text"
-                icon={videoState.muted ? <MutedOutlined /> : <SoundOutlined />}
-                onClick={toggleMute}
-                className="text-white bg-black/50 hover:bg-black/70"
-                size="small"
-              />
+              <Tooltip title={videoState.muted ? "Bật tiếng" : "Tắt tiếng"} destroyOnHidden styles={tooltipStyle}>
+                <Button
+                  type="text"
+                  icon={videoState.muted ? <MutedOutlined /> : <SoundOutlined />}
+                  onClick={toggleMute}
+                  className="text-white bg-black/50 hover:bg-black/70"
+                  size="small"
+                />
+              </Tooltip>
+
               <div className="w-20">
                 <Slider
                   min={0}
@@ -160,21 +166,19 @@ const VideoPlayer = ({
                   step={0.1}
                   value={videoState.volume}
                   onChange={setVolume}
-                  tooltip={{
-                    formatter: (value) => `${Math.round(value * 100)}%`,
-                  }}
+                  tooltip={{ formatter: value => `${Math.round(value * 100)}%` }}
                 />
               </div>
+
               <span className="text-white text-xs min-w-max bg-black/50 px-2 py-1 rounded">
-                {formatTime(videoState.currentTime)} /{" "}
-                {formatTime(videoState.duration || 0)}
+                {formatTime(videoState.currentTime)} / {formatTime(videoState.duration || 0)}
               </span>
             </div>
           </div>
         </div>
       </div>
     )}
-    {/* Preview canvas */}
+
     {videoState.duration > 0 && (
       <div
         className="absolute bottom-2 right-2 bg-black/70 rounded-lg overflow-hidden"

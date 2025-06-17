@@ -28,7 +28,7 @@ const Header = memo(({
         </div>
 
         <div className="flex items-center space-x-2">
-          <Tooltip title={showTooltips ? "Chọn video" : ""}>
+          <Tooltip title={showTooltips ? "Chọn video" : ""} destroyOnHidden>
             <Button
               icon={<FileAddOutlined />}
               onClick={selectFile}
@@ -39,7 +39,7 @@ const Header = memo(({
             </Button>
           </Tooltip>
 
-          <Tooltip title={showTooltips ? "Chọn thư mục lưu" : ""}>
+          <Tooltip title={showTooltips ? "Chọn thư mục lưu" : ""} destroyOnHidden>
             <Button
               icon={<FolderOpenOutlined />}
               onClick={selectSaveDirectory}
@@ -49,7 +49,7 @@ const Header = memo(({
             </Button>
           </Tooltip>
 
-          <Tooltip title={showTooltips ? "Cài đặt" : ""}>
+          <Tooltip title={showTooltips ? "Cài đặt" : ""} destroyOnHidden>
             <Button
               icon={<SettingOutlined />}
               onClick={() => setShowSettings(true)}
@@ -57,7 +57,7 @@ const Header = memo(({
             />
           </Tooltip>
 
-          <Tooltip title={showTooltips ? "Phím tắt" : ""}>
+          <Tooltip title={showTooltips ? "Phím tắt" : ""} destroyOnHidden>
             <Button
               icon={<QuestionCircleOutlined />}
               onClick={() => setShowShortcuts(true)}
@@ -65,7 +65,7 @@ const Header = memo(({
             />
           </Tooltip>
 
-          <Tooltip title={showTooltips ? (theme === 'light' ? 'Chế độ tối' : 'Chế độ sáng') : ""}>
+          <Tooltip title={showTooltips ? (theme === 'light' ? 'Chế độ tối' : 'Chế độ sáng') : ""} destroyOnHidden>
             <Button
               icon={theme === 'light' ? <MoonOutlined /> : <SunOutlined />}
               onClick={toggleTheme}

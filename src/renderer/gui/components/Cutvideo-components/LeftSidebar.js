@@ -17,7 +17,15 @@ const LeftSidebar = memo(({
   return (
     <div className="w-80 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 p-4 overflow-y-auto">
       {/* Recent Files */}
-      <Card className="mb-4" size="small">
+      <Card
+        size="small"
+        className="mb-4"
+        styles={{
+          body: {
+            padding: '12px',
+          },
+        }}
+      >
         <Title level={5} className="mb-3">
           📁 File gần đây
         </Title>
@@ -29,7 +37,14 @@ const LeftSidebar = memo(({
       </Card>
 
       {/* Platform Presets */}
-      <Card size="small">
+      <Card
+        size="small"
+        styles={{
+          body: {
+            padding: '12px',
+          },
+        }}
+      >
         <Title level={5} className="mb-3">
           🎯 Preset nền tảng
         </Title>
@@ -40,11 +55,9 @@ const LeftSidebar = memo(({
                 title={showTooltips ? preset.description : ""}
                 placement="bottomLeft"
                 mouseEnterDelay={0.5}
-                styles={{ 
-                  root: { 
-                    maxWidth: '250px'
-                  },
-                  content: {
+                styles={{
+                  body: { 
+                    maxWidth: 250,
                     padding: '8px 12px',
                     fontSize: '12px',
                     lineHeight: '1.5'

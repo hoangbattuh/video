@@ -1,3 +1,4 @@
+console.log('Timeline component loaded');
 import React, { memo, useState, useRef, useEffect } from 'react';
 import { Card, Button, Space, Slider, Tooltip, Popover, Input, Select } from 'antd';
 import {
@@ -10,7 +11,7 @@ import {
   ZoomOutOutlined,
   FullscreenOutlined
 } from '@ant-design/icons';
-
+import { formatTime } from '../../utils/formatTime';
 const { Option } = Select;
 
 const Timeline = memo(({
@@ -48,25 +49,20 @@ const Timeline = memo(({
     return () => window.removeEventListener('resize', updateWidth);
   }, []);
 
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    const ms = Math.floor((seconds % 1) * 100);
-    return `${mins}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
-  };
-
   const getClipPosition = (startTime) => {
+    if (totalDuration === 0) return 0;
     return (startTime / totalDuration) * timelineWidth * zoomLevel;
   };
 
   const getClipWidth = (duration) => {
+    if (totalDuration === 0) return 0;
     return (duration / totalDuration) * timelineWidth * zoomLevel;
   };
 
   const handleTimelineClick = (e) => {
     const rect = timelineRef.current.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
-    const newTime = (clickX / (timelineWidth * zoomLevel)) * totalDuration;
+    const newTime = totalDuration === 0 ? 0 : (clickX / (timelineWidth * zoomLevel)) * totalDuration;
     onSeek(Math.max(0, Math.min(newTime, totalDuration)));
   };
 
@@ -145,7 +141,6 @@ const Timeline = memo(({
         onDragOver={handleDragOver}
         onClick={() => setSelectedClip(index)}
       >
-        {/* Clip Content */}
         <div className="p-2 h-full flex flex-col justify-between">
           <div className="text-xs font-medium truncate" title={clip.name}>
             {clip.name}
@@ -155,7 +150,6 @@ const Timeline = memo(({
           </div>
         </div>
         
-        {/* Clip Actions */}
         {isSelected && currentMode !== 'beginner' && (
           <div className="absolute top-1 right-1 flex space-x-1">
             <Tooltip title="Cắt clip">
@@ -182,22 +176,15 @@ const Timeline = memo(({
           </div>
         )}
         
-        {/* Resize Handles */}
         {isSelected && currentMode === 'expert' && (
           <>
             <div 
               className="absolute left-0 top-0 bottom-0 w-2 bg-blue-500 cursor-ew-resize opacity-75"
-              onMouseDown={(e) => {
-                // Handle left resize
-                e.stopPropagation();
-              }}
+              onMouseDown={(e) => e.stopPropagation()}
             />
             <div 
               className="absolute right-0 top-0 bottom-0 w-2 bg-blue-500 cursor-ew-resize opacity-75"
-              onMouseDown={(e) => {
-                // Handle right resize
-                e.stopPropagation();
-              }}
+              onMouseDown={(e) => e.stopPropagation()}
             />
           </>
         )}
@@ -212,34 +199,41 @@ const Timeline = memo(({
       <Card 
         title="🎬 Timeline Ghép Video" 
         className="h-full"
+        styles={{
+          body: { padding: 16 } // Using styles.body instead of deprecated bodyStyle
+        }}
         extra={
           <Space>
-            {/* Zoom Controls */}
             <Space>
-              <Button
-                size="small"
-                icon={<ZoomOutOutlined />}
-                onClick={() => setZoomLevel(Math.max(0.1, zoomLevel - 0.1))}
-                disabled={zoomLevel <= 0.1}
-              />
+              <Tooltip title={showTooltips ? "Thu nhỏ" : ""}>
+                <Button
+                  size="small"
+                  icon={<ZoomOutOutlined />}
+                  onClick={() => setZoomLevel(Math.max(0.1, zoomLevel - 0.1))}
+                  disabled={zoomLevel <= 0.1}
+                />
+              </Tooltip>
               <span className="text-sm">{Math.round(zoomLevel * 100)}%</span>
-              <Button
-                size="small"
-                icon={<ZoomInOutlined />}
-                onClick={() => setZoomLevel(Math.min(5, zoomLevel + 0.1))}
-                disabled={zoomLevel >= 5}
-              />
+              <Tooltip title={showTooltips ? "Phóng to" : ""}>
+                <Button
+                  size="small"
+                  icon={<ZoomInOutlined />}
+                  onClick={() => setZoomLevel(Math.min(5, zoomLevel + 0.1))}
+                  disabled={zoomLevel >= 5}
+                />
+              </Tooltip>
             </Space>
             
-            {/* Playback Controls */}
             <Space>
-              <Button
-                type="primary"
-                icon={isPlaying ? <PauseOutlined /> : <PlayCircleOutlined />}
-                onClick={isPlaying ? onPause : onPlay}
-              >
-                {isPlaying ? 'Tạm dừng' : 'Phát'}
-              </Button>
+              <Tooltip title={showTooltips ? (isPlaying ? "Tạm dừng" : "Phát") : ""}>
+                <Button
+                  type="primary"
+                  icon={isPlaying ? <PauseOutlined /> : <PlayCircleOutlined />}
+                  onClick={isPlaying ? onPause : onPlay}
+                >
+                  {isPlaying ? 'Tạm dừng' : 'Phát'}
+                </Button>
+              </Tooltip>
               
               <span className="text-sm font-mono">
                 {formatTime(currentTime)} / {formatTime(totalDuration)}
@@ -248,9 +242,7 @@ const Timeline = memo(({
           </Space>
         }
       >
-        {/* Timeline Container */}
         <div className="h-full flex flex-col">
-          {/* Timeline Ruler and Tracks */}
           <div 
             ref={timelineRef}
             className="relative flex-1 border rounded overflow-x-auto overflow-y-hidden min-h-32"
@@ -265,21 +257,17 @@ const Timeline = memo(({
             }}
             onDragOver={handleDragOver}
           >
-            {/* Timeline Ruler */}
             <div className="absolute top-0 left-0 right-0 h-6 bg-gray-100 dark:bg-gray-700 border-b">
               {renderTimelineRuler()}
             </div>
             
-            {/* Timeline Clips */}
-            {timelineClips.map((clip, index) => renderClip(clip, index))}
+            {timelineClips && timelineClips.map((clip, index) => renderClip(clip, index))}
             
-            {/* Playhead */}
             {renderPlayhead()}
             
-            {/* Drop Zone Indicator */}
             <div className="absolute inset-0 pointer-events-none">
               <div className="w-full h-full border-2 border-dashed border-gray-300 dark:border-gray-600 rounded flex items-center justify-center">
-                {timelineClips.length === 0 && (
+                {(!timelineClips || timelineClips.length === 0) && (
                   <div className="text-gray-500 text-center">
                     <div className="text-lg mb-2">🎥</div>
                     <div>Kéo video từ thư viện vào đây để bắt đầu ghép</div>
@@ -289,7 +277,6 @@ const Timeline = memo(({
             </div>
           </div>
           
-          {/* Timeline Scrubber */}
           <div className="mt-4">
             <Slider
               min={0}

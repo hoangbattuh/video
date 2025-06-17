@@ -11,8 +11,7 @@ import {
   CompressOutlined,
   ReloadOutlined
 } from '@ant-design/icons';
-
-const { Option } = Select;
+import { formatTime } from '../../utils/formatTime';
 
 const PreviewPanel = memo(({
   currentClip,
@@ -44,7 +43,7 @@ const PreviewPanel = memo(({
   useEffect(() => {
     if (videoRef.current) {
       const video = videoRef.current;
-      
+
       const handleLoadStart = () => setIsLoading(true);
       const handleLoadedData = () => {
         setIsLoading(false);
@@ -58,11 +57,11 @@ const PreviewPanel = memo(({
         setIsLoading(false);
         setError('Không thể tải video');
       };
-      
+
       video.addEventListener('loadstart', handleLoadStart);
       video.addEventListener('loadeddata', handleLoadedData);
       video.addEventListener('error', handleError);
-      
+
       return () => {
         video.removeEventListener('loadstart', handleLoadStart);
         video.removeEventListener('loadeddata', handleLoadedData);
@@ -99,28 +98,8 @@ const PreviewPanel = memo(({
     }
   }, [playbackSpeed]);
 
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const getQualityLabel = (quality) => {
-    switch (quality) {
-      case 'low': return '360p';
-      case 'medium': return '720p';
-      case 'high': return '1080p';
-      case 'ultra': return '4K';
-      default: return '720p';
-    }
-  };
-
   const handleVideoClick = () => {
-    if (isPlaying) {
-      onPause();
-    } else {
-      onPlay();
-    }
+    isPlaying ? onPause() : onPlay();
   };
 
   const handleTimeUpdate = () => {
@@ -130,13 +109,9 @@ const PreviewPanel = memo(({
   };
 
   return (
-    <div className={`w-96 border-l p-4 flex flex-col ${
-      theme === 'dark' 
-        ? 'bg-gray-900 border-gray-700' 
-        : 'bg-gray-50 border-gray-200'
-    }`}>
-      <Card 
-        title="🎥 Xem trước" 
+    <div className={`w-96 border-l p-4 flex flex-col ${theme === 'dark' ? 'bg-gray-900 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
+      <Card
+        title="🎥 Xem trước"
         size="small"
         className="flex-1 flex flex-col"
         extra={
@@ -150,23 +125,19 @@ const PreviewPanel = memo(({
                   // Handle quality change
                 }}
               >
-                <Option value="low">360p</Option>
-                <Option value="medium">720p</Option>
-                <Option value="high">1080p</Option>
+                <Select.Option value="low">360p</Select.Option>
+                <Select.Option value="medium">720p</Select.Option>
+                <Select.Option value="high">1080p</Select.Option>
                 {currentMode === 'expert' && (
-                  <Option value="ultra">4K</Option>
+                  <Select.Option value="ultra">4K</Select.Option>
                 )}
               </Select>
             )}
-            
+
             <Tooltip title={showTooltips ? "Làm mới" : ""}>
-              <Button
-                size="small"
-                icon={<ReloadOutlined />}
-                onClick={onRefresh}
-              />
+              <Button size="small" icon={<ReloadOutlined />} onClick={onRefresh} />
             </Tooltip>
-            
+
             <Tooltip title={showTooltips ? "Toàn màn hình" : ""}>
               <Button
                 size="small"
@@ -177,31 +148,25 @@ const PreviewPanel = memo(({
           </Space>
         }
       >
-        {/* Video Player */}
         <div className="relative bg-black rounded overflow-hidden mb-4" style={{ aspectRatio: '16/9' }}>
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
               <Progress type="circle" percent={50} size={60} />
             </div>
           )}
-          
+
           {error && (
             <div className="absolute inset-0 flex items-center justify-center bg-black text-white">
               <div className="text-center">
                 <div className="text-red-500 mb-2">⚠️</div>
                 <div>{error}</div>
-                <Button 
-                  type="primary" 
-                  size="small" 
-                  className="mt-2"
-                  onClick={onRefresh}
-                >
+                <Button type="primary" size="small" className="mt-2" onClick={onRefresh}>
                   Thử lại
                 </Button>
               </div>
             </div>
           )}
-          
+
           {currentClip ? (
             <video
               ref={videoRef}
@@ -226,8 +191,7 @@ const PreviewPanel = memo(({
               </div>
             </div>
           )}
-          
-          {/* Play/Pause Overlay */}
+
           {currentClip && (
             <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black bg-opacity-30">
               <Button
@@ -241,11 +205,9 @@ const PreviewPanel = memo(({
             </div>
           )}
         </div>
-        
-        {/* Video Controls */}
+
         {currentClip && (
           <div className="space-y-3">
-            {/* Progress Bar */}
             <Slider
               min={0}
               max={totalDuration}
@@ -257,22 +219,15 @@ const PreviewPanel = memo(({
                 placement: 'top'
               }}
             />
-            
-            {/* Main Controls */}
+
             <div className="flex items-center justify-between">
               <Space>
                 {currentMode !== 'beginner' && (
-                  <>
-                    <Tooltip title={showTooltips ? "Frame trước" : ""}>
-                      <Button
-                        size="small"
-                        icon={<StepBackwardOutlined />}
-                        onClick={onPrevFrame}
-                      />
-                    </Tooltip>
-                  </>
+                  <Tooltip title={showTooltips ? "Frame trước" : ""}>
+                    <Button size="small" icon={<StepBackwardOutlined />} onClick={onPrevFrame} />
+                  </Tooltip>
                 )}
-                
+
                 <Button
                   type="primary"
                   icon={isPlaying ? <PauseOutlined /> : <PlayCircleOutlined />}
@@ -280,27 +235,21 @@ const PreviewPanel = memo(({
                 >
                   {isPlaying ? 'Dừng' : 'Phát'}
                 </Button>
-                
+
                 {currentMode !== 'beginner' && (
                   <Tooltip title={showTooltips ? "Frame sau" : ""}>
-                    <Button
-                      size="small"
-                      icon={<StepForwardOutlined />}
-                      onClick={onNextFrame}
-                    />
+                    <Button size="small" icon={<StepForwardOutlined />} onClick={onNextFrame} />
                   </Tooltip>
                 )}
               </Space>
-              
+
               <div className="text-sm font-mono text-gray-500">
                 {formatTime(currentTime)} / {formatTime(totalDuration)}
               </div>
             </div>
-            
-            {/* Volume and Speed Controls */}
+
             {currentMode !== 'beginner' && (
               <div className="space-y-2">
-                {/* Volume */}
                 <div className="flex items-center space-x-2">
                   <SoundOutlined className="text-gray-500" />
                   <Slider
@@ -316,8 +265,7 @@ const PreviewPanel = memo(({
                   />
                   <span className="text-xs text-gray-500 w-8">{volume}%</span>
                 </div>
-                
-                {/* Playback Speed */}
+
                 <div className="flex items-center space-x-2">
                   <span className="text-xs text-gray-500">Tốc độ:</span>
                   <Select
@@ -326,21 +274,18 @@ const PreviewPanel = memo(({
                     size="small"
                     style={{ width: 80 }}
                   >
-                    <Option value={0.25}>0.25x</Option>
-                    <Option value={0.5}>0.5x</Option>
-                    <Option value={0.75}>0.75x</Option>
-                    <Option value={1}>1x</Option>
-                    <Option value={1.25}>1.25x</Option>
-                    <Option value={1.5}>1.5x</Option>
-                    <Option value={2}>2x</Option>
+                    {[0.25, 0.5, 0.75, 1, 1.25, 1.5, 2].map((speed) => (
+                      <Select.Option key={speed} value={speed}>
+                        {speed}x
+                      </Select.Option>
+                    ))}
                   </Select>
                 </div>
               </div>
             )}
           </div>
         )}
-        
-        {/* Video Info */}
+
         {currentClip && currentMode !== 'beginner' && (
           <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-800 rounded text-sm">
             <div className="font-medium mb-2">Thông tin Video</div>

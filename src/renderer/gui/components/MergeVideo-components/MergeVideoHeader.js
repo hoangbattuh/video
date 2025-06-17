@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Button, Space, Tooltip, Dropdown, Menu } from 'antd';
+import { Button, Space, Tooltip, Dropdown } from 'antd';
 import {
   FolderOpenOutlined,
   SaveOutlined,
@@ -13,7 +13,7 @@ import {
 const MergeVideoHeader = memo(({
   theme,
   currentMode,
-  setCurrentMode,
+  onModeChange,
   onImportFiles,
   onSaveProject,
   onExportVideo,
@@ -23,22 +23,21 @@ const MergeVideoHeader = memo(({
   toggleTheme,
   showTooltips
 }) => {
-  const modeMenu = (
-    <Menu
-      selectedKeys={[currentMode]}
-      onClick={({ key }) => setCurrentMode(key)}
-    >
-      <Menu.Item key="beginner">
-        <span>🌱 Người mới bắt đầu</span>
-      </Menu.Item>
-      <Menu.Item key="pro">
-        <span>⚡ Chuyên nghiệp</span>
-      </Menu.Item>
-      <Menu.Item key="expert">
-        <span>🚀 Chuyên gia</span>
-      </Menu.Item>
-    </Menu>
-  );
+  // Danh sách lựa chọn chế độ người dùng
+  const modeItems = [
+    {
+      key: 'beginner',
+      label: '🌱 Người mới bắt đầu',
+    },
+    {
+      key: 'pro',
+      label: '⚡ Chuyên nghiệp',
+    },
+    {
+      key: 'expert',
+      label: '🚀 Chuyên gia',
+    },
+  ];
 
   return (
     <div className={`h-16 border-b flex items-center justify-between px-4 ${
@@ -49,7 +48,15 @@ const MergeVideoHeader = memo(({
       {/* Logo và Title */}
       <div className="flex items-center space-x-4">
         <h1 className="text-xl font-bold text-blue-600">Video Merger Pro</h1>
-        <Dropdown overlay={modeMenu} placement="bottomLeft">
+        <Dropdown
+          menu={{
+            items: modeItems,
+            selectable: true,
+            selectedKeys: [currentMode],
+            onClick: ({ key }) => onModeChange(key),
+          }}
+          placement="bottomLeft"
+        >
           <Button type="text" className="text-sm">
             {currentMode === 'beginner' && '🌱 Cơ bản'}
             {currentMode === 'pro' && '⚡ Pro'}

@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { message } from 'antd';
-
+import { formatTime } from '../../utils/formatTime';
 const useVideoSettings = () => {
   const [videoInfo, setVideoInfo] = useState({
     cutStart: 0,
@@ -189,12 +189,6 @@ const useVideoSettings = () => {
     message.info("Đã khôi phục cài đặt mặc định!");
   }, []);
 
-  const formatTime = useCallback((seconds) => {
-    if (!seconds || isNaN(seconds)) return "00:00";
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  }, []);
 
   // Auto-save settings
   useEffect(() => {

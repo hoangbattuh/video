@@ -29,7 +29,12 @@ const MainContent = memo(({
       {/* Video Player Area */}
       <div className="flex-1 flex items-center justify-center p-6">
         {showNoFileNotice ? (
-          <Card className="w-full max-w-2xl">
+          <Card
+            className="w-full max-w-2xl"
+            styles={{
+              body: { padding: 0 }, // Không cần padding vì bên trong div đã xử lý
+            }}
+          >
             <div 
               className="text-center py-16 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-blue-400 transition-colors"
               onDrop={handleDrop}

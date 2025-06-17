@@ -2,15 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Modal, Progress, Typography, Card, Tag } from 'antd';
 import { ThunderboltOutlined, LoadingOutlined } from '@ant-design/icons';
+import { formatTime } from '../../utils/formatTime';
 
 const { Text, Title } = Typography;
-
-const formatTime = (seconds) => {
-  if (!seconds || isNaN(seconds)) return '00:00';
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-};
 
 const ProgressModal = ({
   showProgressModal,
@@ -56,7 +50,15 @@ const ProgressModal = ({
         />
 
         {videoInfo?.selectedFile && (
-          <Card className={`mt-4 ${dark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50'}`}>
+          <Card
+            className={`mt-4 ${dark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50'}`}
+            styles={{
+              body: {
+                backgroundColor: dark ? '#1f2937' : '#f9fafb',
+                padding: 16,
+              }
+            }}
+          >
             <div className="space-y-2">
               <div className="flex justify-between">
                 <Text className={dark ? 'text-gray-300' : 'text-gray-600'}>File:</Text>
@@ -76,7 +78,7 @@ const ProgressModal = ({
                 <Text className={dark ? 'text-gray-300' : 'text-gray-600'}>Chế độ:</Text>
                 <Text className={dark ? 'text-white' : 'text-gray-800'}>
                   {videoInfo.mode === 'single' ? 'Cắt đơn' :
-                   videoInfo.mode === 'segments' ? 'Chia đoạn' : 'Loại bỏ đoạn'}
+                  videoInfo.mode === 'segments' ? 'Chia đoạn' : 'Loại bỏ đoạn'}
                 </Text>
               </div>
 

@@ -1,8 +1,14 @@
 import React from 'react';
-import { Slider, Typography, InputNumber, Button, Space, Tooltip, Card, Row, Col } from 'antd';
+import {
+  Slider, Typography, InputNumber, Button,
+  Space, Tooltip, Card, Row, Col
+} from 'antd';
 import PropTypes from 'prop-types';
+import {
+  BackwardOutlined, ForwardOutlined
+} from '@ant-design/icons';
+
 const { Title, Text } = Typography;
-import { BackwardOutlined, ForwardOutlined } from '@ant-design/icons';
 
 const TimelineControls = ({
   videoInfo,
@@ -20,30 +26,53 @@ const TimelineControls = ({
         Điều chỉnh vùng cắt
       </Title>
       <Space>
-        <Tooltip title="Đặt điểm bắt đầu">
+        <Tooltip
+          title="Đặt điểm bắt đầu"
+          destroyOnHidden
+          styles={{
+            body: {
+              maxWidth: 250,
+              padding: '8px 12px',
+              fontSize: '12px',
+              lineHeight: '1.5'
+            }
+          }}
+        >
           <Button
             size="small"
             icon={<BackwardOutlined />}
-            onClick={() => {
-              setVideoInfo(prev => ({ ...prev, cutStart: videoState.currentTime }));
-            }}
+            onClick={() =>
+              setVideoInfo(prev => ({ ...prev, cutStart: videoState.currentTime }))
+            }
           >
             Đặt Start
           </Button>
         </Tooltip>
-        <Tooltip title="Đặt điểm kết thúc">
+        <Tooltip
+          title="Đặt điểm kết thúc"
+          destroyOnHidden
+          styles={{
+            body: {
+              maxWidth: 250,
+              padding: '8px 12px',
+              fontSize: '12px',
+              lineHeight: '1.5'
+            }
+          }}
+        >
           <Button
             size="small"
             icon={<ForwardOutlined />}
-            onClick={() => {
-              setVideoInfo(prev => ({ ...prev, cutEnd: videoState.currentTime }));
-            }}
+            onClick={() =>
+              setVideoInfo(prev => ({ ...prev, cutEnd: videoState.currentTime }))
+            }
           >
             Đặt End
           </Button>
         </Tooltip>
       </Space>
     </div>
+
     <div className="mb-4">
       <Slider
         range
@@ -59,6 +88,7 @@ const TimelineControls = ({
         className="timeline-slider"
       />
     </div>
+
     <Row gutter={[16, 8]}>
       <Col xs={24} sm={8}>
         <div className="text-center p-2 bg-blue-50 rounded border border-blue-200">
@@ -68,11 +98,14 @@ const TimelineControls = ({
             max={videoState.duration}
             step={0.1}
             value={videoInfo.cutStart}
-            onChange={val => setVideoInfo(prev => ({ ...prev, cutStart: val }))}
+            onChange={val =>
+              setVideoInfo(prev => ({ ...prev, cutStart: val }))
+            }
             className="w-full"
           />
         </div>
       </Col>
+
       <Col xs={24} sm={8}>
         <div className="text-center p-2 bg-green-50 rounded border border-green-200">
           <Text strong className="text-green-600 block text-xs mb-1">KẾT THÚC</Text>
@@ -81,11 +114,14 @@ const TimelineControls = ({
             max={videoState.duration}
             step={0.1}
             value={videoInfo.cutEnd}
-            onChange={val => setVideoInfo(prev => ({ ...prev, cutEnd: val }))}
+            onChange={val =>
+              setVideoInfo(prev => ({ ...prev, cutEnd: val }))
+            }
             className="w-full"
           />
         </div>
       </Col>
+
       <Col xs={24} sm={8}>
         <div className="text-center p-2 bg-yellow-50 rounded border border-yellow-200">
           <Text strong className="text-yellow-600 block text-xs mb-1">THỜI LƯỢNG</Text>

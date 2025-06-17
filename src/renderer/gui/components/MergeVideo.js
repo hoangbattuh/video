@@ -29,8 +29,7 @@ export default function MergeVideo() {
     isExporting,
     exportProgress,
     exportSettings,
-    showSettings,
-    showHelp,
+    
     
     // Setters
     setCurrentMode,

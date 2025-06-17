@@ -27,7 +27,6 @@ import {
 
 const { Text, Title } = Typography;
 const { Option } = Select;
-const { Panel } = Collapse;
 
 const TransitionPanel = ({
   selectedClips = [],
@@ -51,7 +50,7 @@ const TransitionPanel = ({
     useColorOverlay: false
   });
   
-  // Transition types với mô tả
+  // Transition types with descriptions
   const transitionTypes = {
     beginner: [
       { value: 'fade', label: 'Mờ dần', description: 'Chuyển cảnh mờ dần đơn giản' },
@@ -173,6 +172,128 @@ const TransitionPanel = ({
   
   const canApply = selectedClips.length >= 2;
   
+  const collapseItems = [
+    {
+      key: 'advanced',
+      label: 'Cài đặt nâng cao',
+      children: (
+        <Space direction="vertical" style={{ width: '100%' }} size="small">
+          {/* Easing */}
+          <div>
+            <Text strong style={{ fontSize: 12 }}>Kiểu chuyển động</Text>
+            <Select
+              value={easing}
+              onChange={setEasing}
+              style={{ width: '100%', marginTop: 4 }}
+              size="small"
+              disabled={!canApply}
+            >
+              {easingTypes.map(ease => (
+                <Option key={ease.value} value={ease.value}>
+                  {ease.label}
+                </Option>
+              ))}
+            </Select>
+          </div>
+          
+          {/* Intensity */}
+          <div>
+            <Text strong style={{ fontSize: 12 }}>Cường độ (%)</Text>
+            <Slider
+              min={0}
+              max={100}
+              value={intensity}
+              onChange={setIntensity}
+              disabled={!canApply}
+              tooltip={{ formatter: (value) => `${value}%` }}
+              style={{ marginTop: 4 }}
+            />
+          </div>
+          
+          {/* Custom Settings for Expert Mode */}
+          {mode === 'expert' && transitionType === 'custom' && (
+            <>
+              <Divider style={{ margin: '8px 0' }} />
+              <Text strong style={{ fontSize: 12 }}>Cài đặt tùy chỉnh</Text>
+              
+              {/* Blur */}
+              <div>
+                <Text style={{ fontSize: 11 }}>Độ mờ</Text>
+                <Slider
+                  min={0}
+                  max={20}
+                  value={customSettings.blur}
+                  onChange={(value) => handleCustomSettingChange('blur', value)}
+                  disabled={!canApply}
+                  tooltip={{ formatter: (value) => `${value}px` }}
+                />
+              </div>
+              
+              {/* Scale */}
+              <div>
+                <Text style={{ fontSize: 11 }}>Tỷ lệ</Text>
+                <Slider
+                  min={0.1}
+                  max={3}
+                  step={0.1}
+                  value={customSettings.scale}
+                  onChange={(value) => handleCustomSettingChange('scale', value)}
+                  disabled={!canApply}
+                  tooltip={{ formatter: (value) => `${value}x` }}
+                />
+              </div>
+              
+              {/* Rotation */}
+              <div>
+                <Text style={{ fontSize: 11 }}>Góc xoay</Text>
+                <Slider
+                  min={-360}
+                  max={360}
+                  value={customSettings.rotation}
+                  onChange={(value) => handleCustomSettingChange('rotation', value)}
+                  disabled={!canApply}
+                  tooltip={{ formatter: (value) => `${value}°` }}
+                />
+              </div>
+              
+              {/* Color Overlay */}
+              <div>
+                <Space>
+                  <Switch
+                    checked={customSettings.useColorOverlay}
+                    onChange={(checked) => handleCustomSettingChange('useColorOverlay', checked)}
+                    disabled={!canApply}
+                    size="small"
+                  />
+                  <Text style={{ fontSize: 11 }}>Lớp phủ màu</Text>
+                </Space>
+                {customSettings.useColorOverlay && (
+                  <input
+                    type="color"
+                    value={customSettings.colorOverlay}
+                    onChange={(e) => handleCustomSettingChange('colorOverlay', e.target.value)}
+                    disabled={!canApply}
+                    style={{ 
+                      width: '100%', 
+                      height: 24, 
+                      border: 'none', 
+                      borderRadius: 4,
+                      marginTop: 4
+                    }}
+                  />
+                )}
+              </div>
+            </>
+          )}
+        </Space>
+      ),
+      style: { 
+        background: theme === 'dark' ? '#262626' : '#fafafa',
+        border: 'none'
+      }
+    }
+  ];
+
   return (
     <Card
       title={
@@ -182,11 +303,14 @@ const TransitionPanel = ({
         </Space>
       }
       size="small"
+      styles={{
+        body: { padding: 12 },
+        header: { borderBottom: theme === 'dark' ? '1px solid #434343' : '1px solid #d9d9d9' }
+      }}
       style={{
         background: theme === 'dark' ? '#1f1f1f' : '#fff',
         border: theme === 'dark' ? '1px solid #434343' : '1px solid #d9d9d9'
       }}
-      bodyStyle={{ padding: 12 }}
       extra={
         <Space>
           <Tooltip title="Xem trước" disabled={!showTooltips}>
@@ -235,7 +359,7 @@ const TransitionPanel = ({
           >
             {currentTransitions.map(transition => (
               <Option key={transition.value} value={transition.value}>
-                <Tooltip title={transition.description} disabled={!showTooltips}>
+                <Tooltip title={showTooltips ? transition.description : null}>
                   {transition.label}
                 </Tooltip>
               </Option>
@@ -295,126 +419,11 @@ const TransitionPanel = ({
         
         {/* Advanced Settings */}
         {mode !== 'beginner' && (
-          <Collapse size="small" ghost>
-            <Panel 
-              header="Cài đặt nâng cao" 
-              key="advanced"
-              style={{ 
-                background: theme === 'dark' ? '#262626' : '#fafafa',
-                border: 'none'
-              }}
-            >
-              <Space direction="vertical" style={{ width: '100%' }} size="small">
-                {/* Easing */}
-                <div>
-                  <Text strong style={{ fontSize: 12 }}>Kiểu chuyển động</Text>
-                  <Select
-                    value={easing}
-                    onChange={setEasing}
-                    style={{ width: '100%', marginTop: 4 }}
-                    size="small"
-                    disabled={!canApply}
-                  >
-                    {easingTypes.map(ease => (
-                      <Option key={ease.value} value={ease.value}>
-                        {ease.label}
-                      </Option>
-                    ))}
-                  </Select>
-                </div>
-                
-                {/* Intensity */}
-                <div>
-                  <Text strong style={{ fontSize: 12 }}>Cường độ (%)</Text>
-                  <Slider
-                    min={0}
-                    max={100}
-                    value={intensity}
-                    onChange={setIntensity}
-                    disabled={!canApply}
-                    tooltip={{ formatter: (value) => `${value}%` }}
-                    style={{ marginTop: 4 }}
-                  />
-                </div>
-                
-                {/* Custom Settings for Expert Mode */}
-                {mode === 'expert' && transitionType === 'custom' && (
-                  <>
-                    <Divider style={{ margin: '8px 0' }} />
-                    <Text strong style={{ fontSize: 12 }}>Cài đặt tùy chỉnh</Text>
-                    
-                    {/* Blur */}
-                    <div>
-                      <Text style={{ fontSize: 11 }}>Độ mờ</Text>
-                      <Slider
-                        min={0}
-                        max={20}
-                        value={customSettings.blur}
-                        onChange={(value) => handleCustomSettingChange('blur', value)}
-                        disabled={!canApply}
-                        tooltip={{ formatter: (value) => `${value}px` }}
-                      />
-                    </div>
-                    
-                    {/* Scale */}
-                    <div>
-                      <Text style={{ fontSize: 11 }}>Tỷ lệ</Text>
-                      <Slider
-                        min={0.1}
-                        max={3}
-                        step={0.1}
-                        value={customSettings.scale}
-                        onChange={(value) => handleCustomSettingChange('scale', value)}
-                        disabled={!canApply}
-                        tooltip={{ formatter: (value) => `${value}x` }}
-                      />
-                    </div>
-                    
-                    {/* Rotation */}
-                    <div>
-                      <Text style={{ fontSize: 11 }}>Góc xoay</Text>
-                      <Slider
-                        min={-360}
-                        max={360}
-                        value={customSettings.rotation}
-                        onChange={(value) => handleCustomSettingChange('rotation', value)}
-                        disabled={!canApply}
-                        tooltip={{ formatter: (value) => `${value}°` }}
-                      />
-                    </div>
-                    
-                    {/* Color Overlay */}
-                    <div>
-                      <Space>
-                        <Switch
-                          checked={customSettings.useColorOverlay}
-                          onChange={(checked) => handleCustomSettingChange('useColorOverlay', checked)}
-                          disabled={!canApply}
-                          size="small"
-                        />
-                        <Text style={{ fontSize: 11 }}>Lớp phủ màu</Text>
-                      </Space>
-                      {customSettings.useColorOverlay && (
-                        <input
-                          type="color"
-                          value={customSettings.colorOverlay}
-                          onChange={(e) => handleCustomSettingChange('colorOverlay', e.target.value)}
-                          disabled={!canApply}
-                          style={{ 
-                            width: '100%', 
-                            height: 24, 
-                            border: 'none', 
-                            borderRadius: 4,
-                            marginTop: 4
-                          }}
-                        />
-                      )}
-                    </div>
-                  </>
-                )}
-              </Space>
-            </Panel>
-          </Collapse>
+          <Collapse 
+            size="small" 
+            ghost 
+            items={collapseItems}
+          />
         )}
         
         {/* Action Buttons */}
