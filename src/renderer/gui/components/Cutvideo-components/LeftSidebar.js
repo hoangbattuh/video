@@ -38,11 +38,21 @@ const LeftSidebar = memo(({
             <div key={key} className="preset-wrapper">
               <Tooltip 
                 title={showTooltips ? preset.description : ""}
-                placement="right"
+                placement="bottomLeft"
                 mouseEnterDelay={0.5}
-                overlayStyle={{ maxWidth: 300 }}
+                styles={{ 
+                  root: { 
+                    maxWidth: '250px'
+                  },
+                  content: {
+                    padding: '8px 12px',
+                    fontSize: '12px',
+                    lineHeight: '1.5'
+                  }
+                }}
                 color="#1f1f1f"
-                destroyTooltipOnHide
+                destroyOnHidden
+                arrow={false}
               >
                 <div
                   className={`preset-item ${selectedPreset === key ? 'selected' : ''}`}
