@@ -6,7 +6,15 @@ import React, {
   memo,
   useMemo,
 } from "react";
-import { message, Menu } from "antd";
+import { message, FloatButton, Affix } from "antd";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  SaveOutlined,
+  SettingOutlined,
+  QuestionCircleOutlined,
+  ReloadOutlined,
+  BugOutlined,
+} from "@ant-design/icons";
 
 import ProgressModal from "./Cutvideo-components/ProgressModal";
 import Header from "./Cutvideo-components/Header";
@@ -19,9 +27,10 @@ import useVideoPlayer from "../hooks/useVideoPlayer";
 import useVideoProcessor from "../hooks/useVideoProcessor";
 import useFileManager from "../hooks/useFileManager";
 import useVideoSettings from "./hooks/useVideoSettings";
+import "./CutVideo.css"; 
 
 const CutVideo = memo(() => {
-  // Use custom hooks
+  // Custom hooks
   const {
     videoInfo,
     setVideoInfo,
@@ -49,8 +58,14 @@ const CutVideo = memo(() => {
   } = useVideoSettings();
 
   const canvasRef = useRef(null);
+  const [showProgressModal, setShowProgressModal] = useState(false);
+  const [processingStats, setProcessingStats] = useState({
+    startTime: null,
+    estimatedTime: null,
+    speed: null,
+  });
 
-  // Custom hooks
+  // Enhanced video player hook
   const {
     videoRef,
     videoState,
@@ -61,8 +76,12 @@ const CutVideo = memo(() => {
     toggleMute,
     setPlaybackRate,
   } = useVideoPlayer();
+
+  // Enhanced video processor hook
   const { processing, progress, error, processVideo, initWorker } =
     useVideoProcessor();
+
+  // Enhanced file manager hook
   const {
     files,
     saveDir,
@@ -72,11 +91,12 @@ const CutVideo = memo(() => {
     selectSaveDirectory,
   } = useFileManager();
 
-  // Hàm chọn file
+  // Enhanced file selection with drag and drop support
   const selectFile = useCallback(() => {
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = "video/*";
+    input.accept = "video/*,audio/*";
+    input.multiple = false;
     input.onchange = (e) => {
       const file = e.target.files[0];
       if (file) {
@@ -86,11 +106,24 @@ const CutVideo = memo(() => {
     input.click();
   }, []);
 
-  // Xử lý tải video với tối ưu hóa
+  // Enhanced file handling with validation and metadata extraction
   const handleFileSelect = useCallback(
     (file) => {
       if (typeof file === "object" && file.file) {
         file = file.file;
+      }
+
+      // Validate file type
+      if (!file.type.startsWith("video/") && !file.type.startsWith("audio/")) {
+        message.error("Vui lòng chọn file video hoặc audio hợp lệ!");
+        return;
+      }
+
+      // Validate file size (max 5GB)
+      const maxSize = 5 * 1024 * 1024 * 1024; // 5GB
+      if (file.size > maxSize) {
+        message.error("File quá lớn! Vui lòng chọn file nhỏ hơn 5GB.");
+        return;
       }
 
       const fileInfo = addFile(file);
@@ -98,9 +131,14 @@ const CutVideo = memo(() => {
 
       if (!video) return;
 
+      // Show loading state
+      message.loading("Đang tải video...", 0);
+
       video.src = fileInfo.url;
 
       video.onloadedmetadata = () => {
+        message.destroy();
+
         updateVideoState({
           duration: video.duration,
           currentTime: 0,
@@ -111,23 +149,34 @@ const CutVideo = memo(() => {
 
         setVideoInfo((prev) => ({
           ...prev,
-          cutEnd: Math.min(10, video.duration),
+          cutEnd: Math.min(30, video.duration), // Default to 30 seconds or full duration
           selectedFile: fileInfo,
         }));
 
         initWorker();
         renderFrame();
+
+        message.success(`Video đã được tải: ${formatTime(video.duration)}`);
       };
 
-      video.onerror = () => {
+      video.onerror = (e) => {
+        message.destroy();
         message.error("Không thể tải video. Vui lòng kiểm tra định dạng file.");
         removeFile(fileInfo.id);
+        console.error("Video load error:", e);
       };
     },
-    [addFile, updateVideoState, initWorker, removeFile, setVideoInfo]
+    [
+      addFile,
+      updateVideoState,
+      initWorker,
+      removeFile,
+      setVideoInfo,
+      formatTime,
+    ]
   );
 
-  // Render khung hình hiện tại với tối ưu hóa
+  // Enhanced frame rendering with optimization
   const renderFrame = useCallback(() => {
     if (!videoRef.current || !canvasRef.current) return;
 
@@ -136,13 +185,22 @@ const CutVideo = memo(() => {
     const ctx = canvas.getContext("2d");
 
     if (video.videoWidth && video.videoHeight) {
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      // Set canvas dimensions with device pixel ratio for crisp rendering
+      const devicePixelRatio = window.devicePixelRatio || 1;
+      const displayWidth = 160;
+      const displayHeight = 90;
+
+      canvas.width = displayWidth * devicePixelRatio;
+      canvas.height = displayHeight * devicePixelRatio;
+      canvas.style.width = `${displayWidth}px`;
+      canvas.style.height = `${displayHeight}px`;
+
+      ctx.scale(devicePixelRatio, devicePixelRatio);
+      ctx.drawImage(video, 0, 0, displayWidth, displayHeight);
     }
   }, []);
 
-  // Hàm xử lý cắt video
+  // Enhanced video cutting with progress tracking
   const handleCutVideo = useCallback(async () => {
     if (!videoInfo.selectedFile) {
       message.error("Vui lòng chọn video trước");
@@ -154,7 +212,18 @@ const CutVideo = memo(() => {
       return;
     }
 
+    const duration = videoInfo.cutEnd - videoInfo.cutStart;
+    if (duration < 0.1) {
+      message.error("Thời lượng cắt quá ngắn (tối thiểu 0.1 giây)");
+      return;
+    }
+
     setShowProgressModal(true);
+    setProcessingStats({
+      startTime: Date.now(),
+      estimatedTime: duration * 2, // Rough estimate
+      speed: null,
+    });
 
     try {
       const options = {
@@ -163,6 +232,7 @@ const CutVideo = memo(() => {
         mode: videoInfo.mode,
         lossless: videoInfo.lossless,
         snapKeyframe: videoInfo.snapKeyframe,
+        outputPath: saveDir,
         ...videoInfo.advancedOptions,
       };
 
@@ -173,25 +243,39 @@ const CutVideo = memo(() => {
       }
 
       await processVideo(videoInfo.selectedFile, options);
-      message.success("Cắt video thành công!");
+
+      const processingTime = (Date.now() - processingStats.startTime) / 1000;
+      message.success(
+        `Cắt video thành công! Thời gian xử lý: ${formatTime(processingTime)}`
+      );
     } catch (err) {
-      message.error("Lỗi khi cắt video: " + err.message);
+      console.error("Video processing error:", err);
+      message.error(`Lỗi khi cắt video: ${err.message}`);
     } finally {
       setShowProgressModal(false);
+      setProcessingStats({
+        startTime: null,
+        estimatedTime: null,
+        speed: null,
+      });
     }
-  }, [videoInfo, processVideo, setShowProgressModal]);
+  }, [videoInfo, processVideo, saveDir, processingStats.startTime, formatTime]);
 
-  // Add showProgressModal state
-  const [showProgressModal, setShowProgressModal] = useState(false);
-
-  // Xử lý phím tắt
+  // Enhanced keyboard shortcuts
   const handleKeyPress = useCallback(
     (e) => {
       if (!videoRef.current) return;
 
-      // Không xử lý phím tắt khi đang focus vào input
-      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")
+      // Don't handle shortcuts when focused on input elements
+      if (
+        e.target.tagName === "INPUT" ||
+        e.target.tagName === "TEXTAREA" ||
+        e.target.contentEditable === "true"
+      )
         return;
+
+      const step = e.shiftKey ? 1 : 10; // Fine control with Shift
+      const volumeStep = e.shiftKey ? 0.01 : 0.1;
 
       switch (e.key) {
         case " ":
@@ -200,19 +284,19 @@ const CutVideo = memo(() => {
           break;
         case "ArrowLeft":
           e.preventDefault();
-          seekTo(Math.max(0, videoState.currentTime - 10));
+          seekTo(Math.max(0, videoState.currentTime - step));
           break;
         case "ArrowRight":
           e.preventDefault();
-          seekTo(Math.min(videoState.duration, videoState.currentTime + 10));
+          seekTo(Math.min(videoState.duration, videoState.currentTime + step));
           break;
         case "ArrowUp":
           e.preventDefault();
-          setVolume(Math.min(1, videoState.volume + 0.1));
+          setVolume(Math.min(1, videoState.volume + volumeStep));
           break;
         case "ArrowDown":
           e.preventDefault();
-          setVolume(Math.max(0, videoState.volume - 0.1));
+          setVolume(Math.max(0, videoState.volume - volumeStep));
           break;
         case "m":
         case "M":
@@ -231,20 +315,31 @@ const CutVideo = memo(() => {
             ...prev,
             cutStart: videoState.currentTime,
           }));
-          message.success("Đã đặt điểm bắt đầu");
+          message.success(
+            `Đặt điểm bắt đầu: ${formatTime(videoState.currentTime)}`
+          );
           break;
         case "o":
         case "O":
           e.preventDefault();
-          setVideoInfo((prev) => ({ ...prev, cutEnd: videoState.currentTime }));
-          message.success("Đã đặt điểm kết thúc");
+          setVideoInfo((prev) => ({
+            ...prev,
+            cutEnd: videoState.currentTime,
+          }));
+          message.success(
+            `Đặt điểm kết thúc: ${formatTime(videoState.currentTime)}`
+          );
           break;
-        case "x":
-        case "X":
+        case "Enter":
           if (e.ctrlKey) {
             e.preventDefault();
             handleCutVideo();
           }
+          break;
+        case "Escape":
+          e.preventDefault();
+          if (showSettings) setShowSettings(false);
+          if (showShortcuts) setShowShortcuts(false);
           break;
         default:
           break;
@@ -257,26 +352,33 @@ const CutVideo = memo(() => {
       setVolume,
       toggleMute,
       handleCutVideo,
-      handleFullscreen,
       setVideoInfo,
+      formatTime,
+      showSettings,
+      showShortcuts,
+      setShowSettings,
+      setShowShortcuts,
     ]
   );
 
+  // Enhanced drag and drop with visual feedback
+  const [dragActive, setDragActive] = useState(false);
 
-
-
-
-  // Xử lý drag & drop
   const handleDrop = useCallback(
     (e) => {
       e.preventDefault();
+      setDragActive(false);
+
       const files = Array.from(e.dataTransfer.files);
-      const videoFile = files.find((file) => file.type.startsWith("video/"));
+      const videoFile = files.find(
+        (file) =>
+          file.type.startsWith("video/") || file.type.startsWith("audio/")
+      );
 
       if (videoFile) {
-        handleFileSelect({ file: videoFile });
+        handleFileSelect(videoFile);
       } else {
-        message.warning("Vui lòng chọn file video hợp lệ!");
+        message.warning("Vui lòng chọn file video hoặc audio hợp lệ!");
       }
     },
     [handleFileSelect]
@@ -286,7 +388,93 @@ const CutVideo = memo(() => {
     e.preventDefault();
   }, []);
 
-  // Cập nhật thời gian khi video phát với tối ưu hóa
+  const handleDragEnter = useCallback((e) => {
+    e.preventDefault();
+    setDragActive(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e) => {
+    e.preventDefault();
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      setDragActive(false);
+    }
+  }, []);
+
+  // Timeline change handler with validation
+  const handleTimelineChange = useCallback(
+    ([start, end]) => {
+      // Validate timeline bounds
+      const validStart = Math.max(0, Math.min(start, videoState.duration));
+      const validEnd = Math.max(
+        validStart + 0.1,
+        Math.min(end, videoState.duration)
+      );
+
+      setVideoInfo((prev) => ({
+        ...prev,
+        cutStart: validStart,
+        cutEnd: validEnd,
+      }));
+
+      seekTo(validStart);
+      renderFrame();
+    },
+    [seekTo, renderFrame, videoState.duration, setVideoInfo]
+  );
+
+  // Fullscreen handler with error handling
+  const handleFullscreen = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    try {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else {
+        video.requestFullscreen();
+      }
+    } catch (e) {
+      console.error("Fullscreen error:", e);
+      message.error("Trình duyệt không hỗ trợ chế độ toàn màn hình");
+    }
+  }, []);
+
+  // Auto-save settings with debouncing
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (autoSave) {
+        const settings = {
+          mode: videoInfo.mode,
+          lossless: videoInfo.lossless,
+          snapKeyframe: videoInfo.snapKeyframe,
+          segmentTime: videoInfo.segmentTime,
+          segmentCount: videoInfo.segmentCount,
+          multiType: videoInfo.multiType,
+          advancedOptions: videoInfo.advancedOptions,
+          theme,
+          showTooltips,
+        };
+        localStorage.setItem("cutVideoSettings", JSON.stringify(settings));
+      }
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
+  }, [videoInfo, theme, showTooltips, autoSave]);
+
+  // Load saved settings on mount
+  useEffect(() => {
+    try {
+      const savedSettings = localStorage.getItem("cutVideoSettings");
+      if (savedSettings) {
+        const settings = JSON.parse(savedSettings);
+        setVideoInfo((prev) => ({ ...prev, ...settings }));
+      }
+    } catch (error) {
+      console.warn("Failed to load saved settings:", error);
+    }
+  }, [setVideoInfo]);
+
+  // Enhanced video event handlers
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -305,231 +493,93 @@ const CutVideo = memo(() => {
 
     const handleEnded = () => {
       updateVideoState({ isPlaying: false });
+      message.info("Video đã phát xong");
     };
 
-    video.addEventListener("timeupdate", updateTime);
+    const handleError = (e) => {
+      console.error("Video playback error:", e);
+      message.error("Lỗi phát video");
+    };
+
+    // Throttled time update for performance
+    let timeUpdateTimeout;
+    const throttledUpdateTime = () => {
+      clearTimeout(timeUpdateTimeout);
+      timeUpdateTimeout = setTimeout(updateTime, 100);
+    };
+
+    video.addEventListener("timeupdate", throttledUpdateTime);
     video.addEventListener("loadeddata", handleLoadedData);
     video.addEventListener("ended", handleEnded);
+    video.addEventListener("error", handleError);
 
     return () => {
-      video.removeEventListener("timeupdate", updateTime);
+      clearTimeout(timeUpdateTimeout);
+      video.removeEventListener("timeupdate", throttledUpdateTime);
       video.removeEventListener("loadeddata", handleLoadedData);
       video.removeEventListener("ended", handleEnded);
+      video.removeEventListener("error", handleError);
     };
   }, [updateVideoState, renderFrame]);
 
-  // Keyboard shortcuts effect
+  // Keyboard shortcuts
   useEffect(() => {
     document.addEventListener("keydown", handleKeyPress);
     return () => document.removeEventListener("keydown", handleKeyPress);
   }, [handleKeyPress]);
 
-  // Auto-save settings
+  // Processing stats update
   useEffect(() => {
-    const settings = {
-      mode: videoInfo.mode,
-      lossless: videoInfo.lossless,
-      snapKeyframe: videoInfo.snapKeyframe,
-      segmentTime: videoInfo.segmentTime,
-      segmentCount: videoInfo.segmentCount,
-      multiType: videoInfo.multiType,
-      advancedOptions: videoInfo.advancedOptions,
-    };
-    localStorage.setItem("videoEditor_settings", JSON.stringify(settings));
-  }, [videoInfo]);
+    if (processing && processingStats.startTime) {
+      const interval = setInterval(() => {
+        const elapsed = (Date.now() - processingStats.startTime) / 1000;
+        const speed = progress / elapsed;
+        setProcessingStats((prev) => ({
+          ...prev,
+          speed,
+          estimatedTime: speed > 0 ? (100 - progress) / speed : null,
+        }));
+      }, 1000);
 
-  // Load saved settings
-  useEffect(() => {
-    const savedSettings = localStorage.getItem("videoEditor_settings");
-    if (savedSettings) {
-      try {
-        const settings = JSON.parse(savedSettings);
-        setVideoInfo((prev) => ({ ...prev, ...settings }));
-      } catch (error) {
-        console.warn("Failed to load saved settings:", error);
-      }
+      return () => clearInterval(interval);
     }
-  }, []);
+  }, [processing, progress, processingStats.startTime]);
 
-  // Tùy chọn nâng cao với mô tả chi tiết
-  const advancedOptions = useMemo(
-    () => [
-      {
-        label: "Cắt theo frame chính xác",
-        value: "frameCut",
-        description:
-          "Cắt chính xác theo frame, tăng độ chính xác nhưng chậm hơn",
-        category: "precision",
-      },
-      {
-        label: "Phát hiện thay đổi cảnh",
-        value: "sceneDetection",
-        description: "Tự động phát hiện và cắt theo thay đổi cảnh",
-        category: "ai",
-      },
-      {
-        label: "Phát hiện chuyển động",
-        value: "motionDetection",
-        description: "Phát hiện vùng có chuyển động để tối ưu cắt",
-        category: "ai",
-      },
-      {
-        label: "Phát hiện khuôn mặt",
-        value: "faceDetection",
-        description: "Ưu tiên giữ lại các đoạn có khuôn mặt",
-        category: "ai",
-      },
-      {
-        label: "Phát hiện âm thanh lớn",
-        value: "audioSpike",
-        description: "Cắt dựa trên mức độ âm thanh",
-        category: "audio",
-      },
-      {
-        label: "Phát hiện đoạn im lặng",
-        value: "silenceDetection",
-        description: "Loại bỏ hoặc rút ngắn các đoạn im lặng",
-        category: "audio",
-      },
-      {
-        label: "Tự động căn giữa đối tượng",
-        value: "autoCenter",
-        description: "Tự động crop và căn giữa đối tượng chính",
-        category: "enhancement",
-      },
-      {
-        label: "Loại bỏ logo/watermark",
-        value: "logoRemoval",
-        description: "Tự động phát hiện và loại bỏ logo",
-        category: "enhancement",
-      },
-      {
-        label: "Bảo toàn âm thanh gốc",
-        value: "preserveAudio",
-        description: "Giữ nguyên chất lượng âm thanh gốc",
-        category: "quality",
-      },
-      {
-        label: "Xử lý hàng loạt",
-        value: "batchProcessing",
-        description: "Cho phép xử lý nhiều video cùng lúc",
-        category: "performance",
-      },
-      {
-        label: "Hiệu ứng chuyển tiếp",
-        value: "transitions",
-        description: "Thêm hiệu ứng mượt mà giữa các đoạn",
-        category: "enhancement",
-      },
-      {
-        label: "Giữ metadata gốc",
-        value: "keepMetadata",
-        description: "Bảo toàn thông tin metadata của video",
-        category: "quality",
-      },
-    ],
-    []
-  );
-
-
-
-  // Helper functions
-
-
-
-
-
-
-
-
-
-  // Xử lý thay đổi slider timeline
-  const handleTimelineChange = useCallback(
-    ([start, end]) => {
-      setVideoInfo((prev) => ({
-        ...prev,
-        cutStart: start,
-        cutEnd: end,
-      }));
-      seekTo(start);
-      renderFrame();
-    },
-    [seekTo, renderFrame]
-  );
-
-  // Playback rate options
-  const playbackRates = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2];
-
-  // Speed control menu
-  const speedMenu = (
-    <Menu>
-      {playbackRates.map((rate) => (
-        <Menu.Item
-          key={`speed-${rate}`}
-          onClick={() => setPlaybackRate(rate)}
-          className={
-            videoState.playbackRate === rate ? "ant-menu-item-selected" : ""
-          }
-        >
-          {rate}x
-        </Menu.Item>
-      ))}
-    </Menu>
-  );
-
-  // Xử lý toàn màn hình
-  const handleFullscreen = useCallback(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    if (document.fullscreenElement) {
-      document.exitFullscreen();
-    } else {
-      video.requestFullscreen().catch((e) => {
-        console.error("Lỗi toàn màn hình:", e);
-        message.error("Trình duyệt không hỗ trợ toàn màn hình");
-      });
-    }
-  }, []);
-
-
-
-  // Thêm hiệu ứng loading khi đang xử lý video
-  useEffect(() => {
-    if (processing) {
-      document.body.style.cursor = "wait";
-    } else {
-      document.body.style.cursor = "default";
-    }
-    return () => {
-      document.body.style.cursor = "default";
-    };
-  }, [processing]);
-
-  // Tự động render frame
-  useEffect(() => {
-    if (videoState.isPlaying) {
-      const frameInterval = setInterval(renderFrame, 100);
-      return () => clearInterval(frameInterval);
-    } else {
-      renderFrame();
-    }
-  }, [videoState.isPlaying, renderFrame]);
-
-
-
-
-
-
-
+  // Main component render
   return (
     <div
-      className={`cut-video-wrapper min-h-screen ${
-        theme === "dark" ? "bg-gray-900" : "bg-gray-50"
-      }`}
+      tabIndex={0}
+      aria-label="Khu vực kéo và thả video"
+      className={`cutVideoWrapper ${theme === "dark" ? "dark" : ""}`}
       onDrop={handleDrop}
       onDragOver={handleDragOver}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          selectFile(); // hoặc thao tác bạn muốn khi nhấn Enter / Space
+        }
+      }}
     >
+      {/* Drag overlay */}
+      <AnimatePresence>
+        {dragActive && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="dragOverlay"
+          >
+            <div className="dragContent">
+              <div className="dragIcon">📎</div>
+              <h3>Thả file video vào đây</h3>
+              <p>Hỗ trợ các định dạng: MP4, AVI, MOV, MKV, WebM...</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <Header
         theme={theme}
@@ -539,10 +589,17 @@ const CutVideo = memo(() => {
         setShowShortcuts={setShowShortcuts}
         toggleTheme={toggleTheme}
         showTooltips={showTooltips}
+        videoInfo={videoInfo}
+        processingStats={processingStats}
       />
 
       {/* Main Layout */}
-      <div className="flex h-[calc(100vh-80px)]">
+      <motion.div
+        className="mainLayout"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
         {/* Left Sidebar */}
         <LeftSidebar
           theme={theme}
@@ -575,6 +632,7 @@ const CutVideo = memo(() => {
           setVideoInfo={setVideoInfo}
           formatTime={formatTime}
           showTooltips={showTooltips}
+          dragActive={dragActive}
         />
 
         {/* Right Sidebar */}
@@ -591,8 +649,42 @@ const CutVideo = memo(() => {
           showTooltips={showTooltips}
           videoState={videoState}
           theme={theme}
+          processing={processing}
         />
-      </div>
+      </motion.div>
+
+      {/* Floating Action Buttons */}
+      <Affix offsetBottom={24} style={{ position: "absolute", right: 24 }}>
+        <FloatButton.Group
+          trigger="hover"
+          type="primary"
+          style={{ right: 24 }}
+          icon={<SettingOutlined />}
+        >
+          <FloatButton
+            icon={<SaveOutlined />}
+            tooltip="Lưu cài đặt"
+            onClick={saveSettings}
+          />
+          <FloatButton
+            icon={<ReloadOutlined />}
+            tooltip="Đặt lại cài đặt"
+            onClick={resetSettings}
+          />
+          <FloatButton
+            icon={<QuestionCircleOutlined />}
+            tooltip="Phím tắt"
+            onClick={() => setShowShortcuts(true)}
+          />
+          {process.env.NODE_ENV === "development" && (
+            <FloatButton
+              icon={<BugOutlined />}
+              tooltip="Debug"
+              onClick={() => console.log({ videoInfo, videoState, processing })}
+            />
+          )}
+        </FloatButton.Group>
+      </Affix>
 
       {/* Modals */}
       <SettingsModal
@@ -613,25 +705,36 @@ const CutVideo = memo(() => {
         theme={theme}
       />
 
-
-
-
-
       <ProgressModal
         showProgressModal={showProgressModal}
         theme={theme}
         progress={progress}
         processing={processing}
         videoInfo={videoInfo}
+        processingStats={processingStats}
+        formatTime={formatTime}
       />
 
-      {error && (
-        <div className="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded shadow-lg z-50">
-          {error}
-        </div>
-      )}
+      {/* Error Display */}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, x: 300 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 300 }}
+            className="errorNotification"
+          >
+            <div className="errorContent">
+              <span className="errorIcon">⚠️</span>
+              <span>{error}</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 });
+
+CutVideo.displayName = "CutVideo";
 
 export default CutVideo;

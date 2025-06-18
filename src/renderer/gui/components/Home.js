@@ -52,7 +52,7 @@ export default function Home() {
           <FeatureCard
             icon={<FaCut />}
             title="Cắt Video"
-            desc="Chọn đoạn giữ lại, tự động tách cảnh thông minh."
+            desc="Chọn đoạn thời gian và tách cảnh thông minh."
             variants={featureVariants}
           />
           <FeatureCard
